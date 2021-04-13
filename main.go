@@ -129,11 +129,11 @@ func main() {
 		}
 	}
 
-	fmt.Fprintf(os.Stderr, "success: DNS record for *.pi.mlcdf.fr updated with the new IP adresses: %s, %s", resolvedIPs.V4, resolvedIPs.V6)
+	fmt.Fprintf(os.Stderr, "success: DNS record for %s.%s updated with the new IP adresses: %s, %s", recordFlag, domainFlag, resolvedIPs.V4, resolvedIPs.V6)
 	err = disc.PostSuccess(&discord.Webhook{
 		Embeds: []discord.Embed{
 			{
-				Author:      discord.Author{Name: "DNS record for *.pi.mlcdf.fr updated with the new IP adresses"},
+				Author:      discord.Author{Name: fmt.Sprintf("DNS record for %s.%s updated with the new IP adresses", recordFlag, domainFlag)},
 				Description: fmt.Sprintf("See [Gandi Live DNS](https://admin.gandi.net/domain/%s/records)", domainFlag),
 				Fields: []discord.Field{
 					{
