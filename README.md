@@ -1,6 +1,6 @@
 # dyndns
 
-Keep Gandi LiveDNS records up to update with the current (dynamic) IP and reports failures and successful update on a Discord channel.
+Keeps Gandi LiveDNS records up to update with the current (dynamic) IP and reports failures and successful updates on a Discord channel.
 
 ## Install
 
@@ -25,7 +25,6 @@ Examples:
     export DISCORD_WEBHOOK='https://discord.com/api/webhooks/xxx'
     export GANDI_TOKEN='foobar'
     dyndns --domain example.com --record "*.pi"
-
 ```
 
 ## Development
