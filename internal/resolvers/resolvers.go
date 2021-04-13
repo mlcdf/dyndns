@@ -15,52 +15,51 @@ type IPAddrs struct {
 	V6 *net.IP
 }
 
-type ResolveFunc func(IPAddrs, error)
+type ResolveFunc func() (*IPAddrs, error)
 
-func resolveViaIpify() (ips [2]*net.IP, err error) {
+var Resolvers []ResolveFunc
+
+func Ipify() (*IPAddrs, error) {
 	res, err := http.Get("https://api64.ipify.org")
 	if err != nil {
-		return
+		return nil, err
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	ip := net.ParseIP(string(body))
 	if ip == nil {
 		err = fmt.Errorf("failed to parse ip")
-		return
+		return nil, err
 	}
-
-	ips[0] = &ip
 
 	if ip.To16() == nil {
 		// if ipv4 return here because there are not IPv6
-		return
+		return &IPAddrs{V4: &ip}, nil
 	}
 
 	res, err = http.Get("https://api.ipify.org")
 	if err != nil {
-		return
+		return nil, err
 	}
 	defer res.Body.Close()
 
 	body, err = ioutil.ReadAll(res.Body)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	ip2 := net.ParseIP(string(body))
 	if ip2 == nil {
 		err = fmt.Errorf("failed to parse ip")
-		return
+		return nil, err
 	}
-	ips[1] = &ip2
 
-	return
+	return &IPAddrs{V6: &ip, V4: &ip2}, nil
 }
 
 type Content struct {
@@ -96,4 +95,8 @@ func Livebox() (*IPAddrs, error) {
 	}
 
 	return &IPAddrs{V4: &content.Result.Data.IPv4, V6: &content.Result.Data.IPv6}, nil
+}
+
+func init() {
+	Resolvers = append(Resolvers, Livebox, Ipify)
 }
