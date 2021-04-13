@@ -27,6 +27,13 @@ Examples:
     dyndns --domain example.com --record "*.pi"
 ```
 
+Setup as a `cron` jon
+```bash
+crontab -e
+# Run every 10 minutes
+*/10 * * * * /home/pi/dyndns --domain example.conf --record "*.pi"
+```
+
 ## Development
 
 Run the app
