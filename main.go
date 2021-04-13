@@ -25,6 +25,9 @@ Examples:
     export DISCORD_WEBHOOK='https://discord.com/api/webhooks/xxx'
     export GANDI_TOKEN='foobar'
     dyndns --domain example.com --record "*.pi"
+
+How to create a Discord webhook: https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks
+How to generate your Gandi token: https://docs.gandi.net/en/domain_names/advanced_users/api.html
 `
 
 // Version can be set at link time to override debug.BuildInfo.Main.Version,
