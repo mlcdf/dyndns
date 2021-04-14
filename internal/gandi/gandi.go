@@ -9,6 +9,8 @@ import (
 	"net"
 	"net/http"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
 type Client struct {
@@ -51,7 +53,7 @@ func (c *Client) Get(fqdn string, name string) ([]*DomainRecord, error) {
 	records := make([]*DomainRecord, 0)
 	err = json.Unmarshal(body, &records)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "failed to get records response=%s", body)
 	}
 
 	return records, nil
@@ -96,7 +98,7 @@ func (c *Client) Post(fqdn string, name string, ip *net.IP, ttl int) error {
 	}
 
 	if res.StatusCode >= 400 {
-		return fmt.Errorf("reason: %s", body)
+		return fmt.Errorf("failed to perform update response=%s", body)
 	}
 	return nil
 }

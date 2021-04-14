@@ -17,6 +17,7 @@ const usage = `Usage:
     dyndns --domain [DOMAIN] --record [RECORD]
 
 Options:
+    --livebox            Use the Livebox IP resolver instead of api.ipify.org
     --ttl                Time to live. Defaults to 3600.
     -v, --verbose        Print verbose output
     -V, --version        Print version
@@ -49,11 +50,15 @@ func main() {
 		domainFlag  string
 		recordFlag  string
 		ttlFlag     int = 3600
+		liveboxFlag bool
 	)
 
 	flag.StringVar(&domainFlag, "domain", domainFlag, "")
 	flag.StringVar(&recordFlag, "record", recordFlag, "")
+
+	flag.BoolVar(&liveboxFlag, "livebox", liveboxFlag, "Use the Livebox IP resolver instead of api.ipify.org")
 	flag.IntVar(&ttlFlag, "ttl", ttlFlag, "Time to live. Defaults to 3600.")
+
 	flag.BoolVar(&versionFlag, "version", versionFlag, "print the version")
 	flag.BoolVar(&versionFlag, "V", versionFlag, "print the version")
 
@@ -83,7 +88,15 @@ func main() {
 		log.Fatal("error: required flag --record is missing")
 	}
 
-	resolvedIPs, err := resolvers.Livebox()
+	resolvedIPs := &resolvers.IPAddrs{}
+	var err error
+
+	if liveboxFlag {
+		resolvedIPs, err = resolvers.Livebox()
+	} else {
+		resolvedIPs, err = resolvers.Ipify()
+	}
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -133,7 +146,7 @@ func main() {
 	err = disc.PostSuccess(&discord.Webhook{
 		Embeds: []discord.Embed{
 			{
-				Author:      discord.Author{Name: fmt.Sprintf("DNS record for %s.%s updated with the new IP adresses", recordFlag, domainFlag)},
+				Title:       fmt.Sprintf("DNS record for %s.%s updated with the new IP adresses", recordFlag, domainFlag),
 				Description: fmt.Sprintf("See [Gandi Live DNS](https://admin.gandi.net/domain/%s/records)", domainFlag),
 				Fields: []discord.Field{
 					{
@@ -159,7 +172,7 @@ func main() {
 func mustEnv(key string) string {
 	value := os.Getenv(key)
 	if value == "" {
-		log.Fatalf("error: required environment variable %s is mission", key)
+		log.Fatalf("error: required environment variable %s is missing", key)
 	}
 	return value
 }
