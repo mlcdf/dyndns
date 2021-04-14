@@ -17,7 +17,9 @@ Update Gandi LiveDNS based on the current (dynamic) ip.
 go get https://github.com/mlcdf/dyndns
 ```
 
-## Required environment variables
+## Config
+
+`dyndns` requires the following environment variables to be set:
 
 | name                  | description                  | docs                                                                      |
 | --------------------- | ---------------------------- | ------------------------------------------------------------------------- |
