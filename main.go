@@ -18,12 +18,11 @@ const usage = `Usage:
 
 Options:
     --livebox            Use the Livebox IP resolver instead of api.ipify.org
-    --ttl                Time to live. Defaults to 3600.
-    -v, --verbose        Print verbose output
+    --ttl                Time to live. Defaults to 3600
     -V, --version        Print version
 
 Examples:
-    export DISCORD_WEBHOOK='https://discord.com/api/webhooks/xxx'
+    export DISCORD_WEBHOOK_URL='https://discord.com/api/webhooks/xxx'
     export GANDI_TOKEN='foobar'
     dyndns --domain example.com --record "*.pi"
 
@@ -77,7 +76,7 @@ func main() {
 		return
 	}
 
-	disc := &discord.Client{WebhookURL: mustEnv("DISCORD_WEBHOOK")}
+	disc := &discord.Client{WebhookURL: mustEnv("DISCORD_WEBHOOK_URL")}
 	log.SetOutput(io.MultiWriter(os.Stderr, disc))
 
 	if domainFlag == "" {
