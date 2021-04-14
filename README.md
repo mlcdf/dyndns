@@ -31,8 +31,10 @@ Setup as a `cron` jon
 ```bash
 crontab -e
 # Run every 10 minutes
-*/10 * * * * /home/pi/dyndns --domain example.com --record "*.pi"
+*/10 * * * * /path/to/dyndns --domain example.com --record "*.pi"
 ```
+
+Checkout the example [contrib/deploy.sh](./contrib/deploy.sh) script.
 
 ## Development
 
