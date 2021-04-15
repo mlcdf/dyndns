@@ -2,7 +2,7 @@
 
 Update Gandi LiveDNS based on the current (dynamic) ip.
 
-## Features
+## Highlights
 
 - Supports both IPv4 and IPv6.
 - Reports failures and successful updates on a Discord channel. /!\ This is not optional (by design).
