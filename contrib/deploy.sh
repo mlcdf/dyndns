@@ -1,5 +1,6 @@
 #! /usr/bin/env bash
-# This script downloads the latest release for a Raspberry Pi 2 Model B, copy the binary, and setup a crontab
+# Setup dyndns on a Raspberry Pi 2 Model B
+
 set -e
 
 # download latest release of dyndns
@@ -7,7 +8,7 @@ LOCATION=$(curl -s https://api.github.com/repos/mlcdf/dyndns/releases/latest | g
 echo $LOCATION
 curl -L "${LOCATION}" -o dyndns
 
-# send to Raspberry Pi
+# copy to host
 scp dyndns pi:/home/pi/
 
 # add to crontab
