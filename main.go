@@ -87,7 +87,7 @@ func main() {
 		log.Fatal("error: required flag --record is missing")
 	}
 
-	resolvedIPs := &ipfinder.IPAddrs{}
+	var resolvedIPs *ipfinder.IPAddrs
 	var err error
 
 	if liveboxFlag {
