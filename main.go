@@ -10,14 +10,14 @@ import (
 
 	"github.com/mlcdf/dyndns/internal/discord"
 	"github.com/mlcdf/dyndns/internal/gandi"
-	"github.com/mlcdf/dyndns/internal/resolvers"
+	"github.com/mlcdf/dyndns/internal/ipfinder"
 )
 
 const usage = `Usage:
     dyndns --domain [DOMAIN] --record [RECORD]
 
 Options:
-    --livebox            Use the Livebox IP resolver instead of api.ipify.org
+    --livebox            Query the Livebox (router) to find the IP instead of api.ipify.org
     --ttl                Time to live. Defaults to 3600
     -V, --version        Print version
 
@@ -87,13 +87,13 @@ func main() {
 		log.Fatal("error: required flag --record is missing")
 	}
 
-	resolvedIPs := &resolvers.IPAddrs{}
+	resolvedIPs := &ipfinder.IPAddrs{}
 	var err error
 
 	if liveboxFlag {
-		resolvedIPs, err = resolvers.Livebox()
+		resolvedIPs, err = ipfinder.Livebox()
 	} else {
-		resolvedIPs, err = resolvers.Ipify()
+		resolvedIPs, err = ipfinder.Ipify()
 	}
 
 	if err != nil {

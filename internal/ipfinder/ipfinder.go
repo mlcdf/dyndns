@@ -1,4 +1,4 @@
-package resolvers
+package ipfinder
 
 import (
 	"encoding/json"

@@ -33,7 +33,7 @@ Usage:
     dyndns --domain [DOMAIN] --record [RECORD]
 
 Options:
-    --livebox            Use the Livebox IP resolver instead of api.ipify.org
+    --livebox            Query the Livebox (router) to find the IP instead of api.ipify.org
     --ttl                Time to live. Defaults to 3600
     -V, --version        Print version
 
