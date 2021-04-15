@@ -17,14 +17,14 @@ Update Gandi LiveDNS based on the current (dynamic) ip.
 go get https://github.com/mlcdf/dyndns
 ```
 
-## Config
+## Setup
 
 `dyndns` requires the following environment variables to be set:
 
-| name                  | description                  | docs                                                                      |
-| --------------------- | ---------------------------- | ------------------------------------------------------------------------- |
-| `DISCORD_WEBHOOK_URL` | your Discord channel webhook | https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks |
-| `GANDI_TOKEN`         | your Gandi API Key           | https://docs.gandi.net/en/domain_names/advanced_users/api.html            |
+| name                  | description                                                                                               |
+|-----------------------|-----------------------------------------------------------------------------------------------------------|
+| `DISCORD_WEBHOOK_URL` | your [Discord channel webhook](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks) |
+| `GANDI_TOKEN`         | your [Gandi API Key](https://docs.gandi.net/en/domain_names/advanced_users/api.html)                      |
 
 ## Usage
 
@@ -36,6 +36,11 @@ Options:
     --livebox            Use the Livebox IP resolver instead of api.ipify.org
     --ttl                Time to live. Defaults to 3600
     -V, --version        Print version
+
+Examples:
+    export DISCORD_WEBHOOK_URL='https://discord.com/api/webhooks/xxx'
+    export GANDI_TOKEN='foobar'
+    dyndns --domain example.com --record "*.pi"
 ```
 
 Setup as a `cron` jon
