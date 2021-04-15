@@ -59,7 +59,7 @@ func Ipify() (*IPAddrs, error) {
 		return nil, err
 	}
 
-	return &IPAddrs{V4: &ip, V6: &ip2}, nil
+	return &IPAddrs{V6: &ip, V4: &ip2}, nil
 }
 
 type Content struct {
