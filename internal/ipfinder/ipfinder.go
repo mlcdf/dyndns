@@ -11,8 +11,8 @@ import (
 )
 
 type IPAddrs struct {
-	V4 *net.IP
-	V6 *net.IP
+	V4 *net.IP `json:"IPAddress"`
+	V6 *net.IP `json:"IPv6Address"`
 }
 
 func Ipify() (*IPAddrs, error) {
@@ -56,19 +56,6 @@ func Ipify() (*IPAddrs, error) {
 	return &IPAddrs{V6: &ip, V4: &ip2}, nil
 }
 
-type Content struct {
-	Result Result `json:"result"`
-}
-
-type Result struct {
-	Data Data `json:"data"`
-}
-
-type Data struct {
-	IPv4 net.IP `json:"IPAddress"`
-	IPv6 net.IP `json:"IPv6Address"`
-}
-
 func Livebox() (*IPAddrs, error) {
 	payload := `{"service": "NMC", "method": "getWANStatus", "parameters": {}}"`
 	res, err := http.Post("http://192.168.1.1/ws", "application/x-sah-ws-1-call+json", strings.NewReader(payload))
@@ -78,8 +65,15 @@ func Livebox() (*IPAddrs, error) {
 
 	defer res.Body.Close()
 	data, err := io.ReadAll(res.Body)
+
 	if err != nil {
 		return nil, err
+	}
+
+	type Content struct {
+		Result struct {
+			Data IPAddrs `json:"data"`
+		} `json:"result"`
 	}
 
 	content := Content{}
@@ -88,5 +82,5 @@ func Livebox() (*IPAddrs, error) {
 		return nil, err
 	}
 
-	return &IPAddrs{V4: &content.Result.Data.IPv4, V6: &content.Result.Data.IPv6}, nil
+	return &content.Result.Data, nil
 }
