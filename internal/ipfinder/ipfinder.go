@@ -15,10 +15,6 @@ type IPAddrs struct {
 	V6 *net.IP
 }
 
-type ResolveFunc func() (*IPAddrs, error)
-
-var Resolvers []ResolveFunc
-
 func Ipify() (*IPAddrs, error) {
 	res, err := http.Get("https://api64.ipify.org")
 	if err != nil {
@@ -33,8 +29,7 @@ func Ipify() (*IPAddrs, error) {
 
 	ip := net.ParseIP(string(body))
 	if ip == nil {
-		err = fmt.Errorf("failed to parse ip")
-		return nil, err
+		return nil, fmt.Errorf("failed to parse ip")
 	}
 
 	if ip.To16() == nil {
@@ -55,8 +50,7 @@ func Ipify() (*IPAddrs, error) {
 
 	ip2 := net.ParseIP(string(body))
 	if ip2 == nil {
-		err = fmt.Errorf("failed to parse ip")
-		return nil, err
+		return nil, fmt.Errorf("failed to parse ip")
 	}
 
 	return &IPAddrs{V6: &ip, V4: &ip2}, nil
@@ -95,8 +89,4 @@ func Livebox() (*IPAddrs, error) {
 	}
 
 	return &IPAddrs{V4: &content.Result.Data.IPv4, V6: &content.Result.Data.IPv6}, nil
-}
-
-func init() {
-	Resolvers = append(Resolvers, Livebox, Ipify)
 }
