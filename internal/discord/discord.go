@@ -68,7 +68,6 @@ func (c *Client) PostError(webhook *Webhook) error {
 
 func (c *Client) PostSuccess(webhook *Webhook) error {
 	webhook.Embeds[0].Color = 5747840
-
 	return c.Post(webhook)
 }
 
