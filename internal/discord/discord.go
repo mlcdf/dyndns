@@ -76,24 +76,23 @@ func (c *Client) Post(webhook *Webhook) error {
 
 	payload, err := json.Marshal(webhook)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to marshal webhook payload: %s", err)
 	}
 
 	res, err := http.Post(c.WebhookURL, "application/json", bytes.NewReader(payload))
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to post to webhook: %s", err)
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 
 	if err != nil {
-		return fmt.Errorf("failed to post to webhook: %s", err)
+		return fmt.Errorf("failed read body response : %s", err)
 	}
 	if res.StatusCode >= 400 || err != nil {
 		return fmt.Errorf("failed to post to webhook: reason=%s status=%s", body, res.Status)
 	}
-
 	return nil
 }
 

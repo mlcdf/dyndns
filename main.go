@@ -9,6 +9,7 @@ import (
 	"runtime/debug"
 
 	"github.com/mlcdf/dyndns/internal/discord"
+	"github.com/mlcdf/dyndns/internal/dyndns"
 	"github.com/mlcdf/dyndns/internal/gandi"
 	"github.com/mlcdf/dyndns/internal/ipfinder"
 )
@@ -34,6 +35,9 @@ How to generate your Gandi token: https://docs.gandi.net/en/domain_names/advance
 // which is "(devel)" when building from within the module. See
 // golang.org/issue/29814 and golang.org/issue/29228.
 var Version string
+
+// This logger will send errors to Stderr and Discord
+var logErr *log.Logger
 
 func main() {
 	log.SetFlags(0)
@@ -77,101 +81,36 @@ func main() {
 	}
 
 	disc := &discord.Client{WebhookURL: mustEnv("DISCORD_WEBHOOK_URL")}
-	log.SetOutput(io.MultiWriter(os.Stderr, disc))
+	logErr = log.New(io.MultiWriter(os.Stderr, disc), "", 0)
 
 	if domainFlag == "" {
-		log.Fatal("error: required flag --domain is missing")
+		logErr.Fatal("error: required flag --domain is missing")
 	}
 
 	if recordFlag == "" {
-		log.Fatal("error: required flag --record is missing")
+		logErr.Fatal("error: required flag --record is missing")
 	}
 
-	var resolvedIPs *ipfinder.IPAddrs
-	var err error
-
+	var ipf ipfinder.IpFinderFunc
 	if liveboxFlag {
-		resolvedIPs, err = ipfinder.Livebox()
+		ipf = ipfinder.Livebox
 	} else {
-		resolvedIPs, err = ipfinder.Ipify()
+		ipf = ipfinder.Ipify
 	}
 
+	g := &gandi.Client{Token: mustEnv("GANDI_TOKEN")}
+	dyn := dyndns.New(domainFlag, recordFlag, ttlFlag)
+
+	err := dyn.Run(ipf, g, disc)
 	if err != nil {
-		log.Fatal(err)
-	}
-
-	gandi := &gandi.Client{Token: mustEnv("GANDI_TOKEN")}
-
-	dnsRecords, err := gandi.Get(domainFlag, recordFlag)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var isIPv4UpToDate bool
-	var isIPv6UpToDate bool
-
-	for _, records := range dnsRecords {
-		for _, rrsetValue := range records.RrsetValues {
-			if rrsetValue.Equal(*resolvedIPs.V4) {
-				isIPv4UpToDate = true
-			}
-
-			if rrsetValue.Equal(*resolvedIPs.V6) {
-				isIPv6UpToDate = true
-			}
-		}
-	}
-
-	if isIPv4UpToDate && isIPv6UpToDate {
-		fmt.Fprintln(os.Stderr, "success: nothing to do")
-		os.Exit(0)
-	}
-
-	if !isIPv4UpToDate {
-		err := gandi.Post(domainFlag, recordFlag, resolvedIPs.V4, ttlFlag)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	if !isIPv6UpToDate {
-		err := gandi.Post(domainFlag, recordFlag, resolvedIPs.V6, ttlFlag)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	fmt.Fprintf(os.Stderr, "success: DNS record for %s.%s updated with the new IP adresses: %s, %s", recordFlag, domainFlag, resolvedIPs.V4, resolvedIPs.V6)
-	err = disc.PostSuccess(&discord.Webhook{
-		Embeds: []discord.Embed{
-			{
-				Title:       fmt.Sprintf("DNS record for %s.%s updated with the new IP adresses", recordFlag, domainFlag),
-				Description: fmt.Sprintf("See [Gandi Live DNS](https://admin.gandi.net/domain/%s/records)", domainFlag),
-				Fields: []discord.Field{
-					{
-						Name:   "v4",
-						Value:  resolvedIPs.V4.String(),
-						Inline: true,
-					},
-					{
-						Name:   "v6",
-						Value:  resolvedIPs.V6.String(),
-						Inline: true,
-					},
-				},
-			},
-		},
-	})
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v", err)
-		os.Exit(1)
+		logErr.Fatalf("error: %v", err)
 	}
 }
 
 func mustEnv(key string) string {
 	value := os.Getenv(key)
 	if value == "" {
-		log.Fatalf("error: required environment variable %s is missing", key)
+		logErr.Fatalf("error: required environment variable %s is missing", key)
 	}
 	return value
 }

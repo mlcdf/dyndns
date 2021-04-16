@@ -10,9 +10,33 @@ import (
 	"strings"
 )
 
+type IpFinderFunc func() (*IPAddrs, error)
+
 type IPAddrs struct {
 	V4 *net.IP `json:"IPAddress"`
 	V6 *net.IP `json:"IPv6Address"`
+}
+
+func (ipAddrs *IPAddrs) String() string {
+	str := ""
+	if ipAddrs.V4 != nil {
+		str += ipAddrs.V4.String()
+	}
+	if ipAddrs.V6 != nil {
+		str += ", " + ipAddrs.V6.String()
+	}
+	return str
+}
+
+func (ipAddrs *IPAddrs) Values() []*net.IP {
+	values := make([]*net.IP, 0, 2)
+	if ipAddrs.V4 != nil {
+		values = append(values, ipAddrs.V4)
+	}
+	if ipAddrs.V6 != nil {
+		values = append(values, ipAddrs.V6)
+	}
+	return values
 }
 
 func Ipify() (*IPAddrs, error) {
@@ -32,7 +56,7 @@ func Ipify() (*IPAddrs, error) {
 		return nil, fmt.Errorf("failed to parse ip")
 	}
 
-	if ip.To16() == nil {
+	if ip.To4() != nil {
 		// if ipv4 return here because there are not IPv6
 		return &IPAddrs{V4: &ip}, nil
 	}
