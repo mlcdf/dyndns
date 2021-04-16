@@ -31,7 +31,7 @@ func (c *Client) Get(fqdn string, name string) ([]*DomainRecord, error) {
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		log.Fatal("Error reading request. ", err)
+		return nil, err
 	}
 
 	req.Header.Set("Authorization", "ApiKey "+c.Token)
@@ -71,14 +71,14 @@ func (c *Client) Post(fqdn string, name string, ip *net.IP, ttl int) error {
 
 	payload, err := json.Marshal(record)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	url := fmt.Sprintf("https://api.gandi.net/v5/livedns/domains/%s/records/%s", fqdn, name)
 
 	req, err := http.NewRequest("POST", url, bytes.NewReader(payload))
 	if err != nil {
-		log.Fatal("Error reading request. ", err)
+		return err
 	}
 
 	req.Header.Set("Authorization", "ApiKey "+c.Token)
@@ -94,7 +94,7 @@ func (c *Client) Post(fqdn string, name string, ip *net.IP, ttl int) error {
 	body, err := ioutil.ReadAll(res.Body)
 
 	if err != nil {
-		return nil
+		return err
 	}
 
 	if res.StatusCode >= 400 {
