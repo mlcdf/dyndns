@@ -18,13 +18,14 @@ type IPAddrs struct {
 }
 
 func (ipAddrs *IPAddrs) String() string {
-	str := ""
+	str := "["
 	if ipAddrs.V4 != nil {
 		str += ipAddrs.V4.String()
 	}
 	if ipAddrs.V6 != nil {
-		str += ", " + ipAddrs.V6.String()
+		str += " " + ipAddrs.V6.String()
 	}
+	str += "]"
 	return str
 }
 

@@ -40,7 +40,7 @@ func (dyndns *DynDNS) Run(domain string, record string, ttl int) error {
 	ipsToUpdate := matchIPs(resolvedIPs, dnsRecords)
 
 	if len(ipsToUpdate) == 0 {
-		log.Println("IP address match - no further action")
+		log.Println("IP address(es) match - no further action")
 		return nil
 	}
 
@@ -89,8 +89,12 @@ func matchIPs(resolvedIPs *ipfinder.IPAddrs, dnsRecords []*gandi.DomainRecord) [
 	isIpV4ToUpdate := false
 	isIpV6ToUpdate := false
 
+	ipsFromDNS := make([]*net.IP, 0, 2)
+
 	for _, records := range dnsRecords {
 		for _, rrsetValue := range records.RrsetValues {
+			ipsFromDNS = append(ipsFromDNS, rrsetValue)
+
 			if resolvedIPs.V4 != nil && rrsetValue.Equal(*resolvedIPs.V4) {
 				isIpV4ToUpdate = true
 			}
@@ -100,6 +104,8 @@ func matchIPs(resolvedIPs *ipfinder.IPAddrs, dnsRecords []*gandi.DomainRecord) [
 			}
 		}
 	}
+
+	log.Printf("IP(s) from DNS:        %s", ipsFromDNS)
 
 	if resolvedIPs.V4 != nil && !isIpV4ToUpdate {
 		toUpdate = append(toUpdate, resolvedIPs.V4)
