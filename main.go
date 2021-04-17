@@ -80,8 +80,8 @@ func main() {
 		return
 	}
 
-	disc := &discord.Client{WebhookURL: mustEnv("DISCORD_WEBHOOK_URL")}
-	logErr = log.New(io.MultiWriter(os.Stderr, disc), "", 0)
+	discordClient := &discord.Client{WebhookURL: mustEnv("DISCORD_WEBHOOK_URL")}
+	logErr = log.New(io.MultiWriter(os.Stderr, discordClient), "", 0)
 
 	if domainFlag == "" {
 		logErr.Fatal("error: required flag --domain is missing")
@@ -98,10 +98,10 @@ func main() {
 		ipf = ipfinder.Ipify
 	}
 
-	g := &gandi.Client{Token: mustEnv("GANDI_TOKEN")}
-	dyn := dyndns.New(domainFlag, recordFlag, ttlFlag)
+	gandiClient := &gandi.Client{Token: mustEnv("GANDI_TOKEN")}
+	dyn := dyndns.New(ipf, gandiClient, discordClient)
 
-	err := dyn.Run(ipf, g, disc)
+	err := dyn.Run(domainFlag, recordFlag, ttlFlag)
 	if err != nil {
 		logErr.Fatalf("error: %v", err)
 	}
