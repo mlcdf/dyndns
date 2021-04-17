@@ -110,7 +110,7 @@ func main() {
 func mustEnv(key string) string {
 	value := os.Getenv(key)
 	if value == "" {
-		logErr.Fatalf("error: required environment variable %s is missing", key)
+		logErr.Fatalf("error: required environment variable %s is empty or missing", key)
 	}
 	return value
 }
