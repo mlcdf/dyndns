@@ -65,7 +65,7 @@ func rrsetType(ip *net.IP) string {
 	return "A"
 }
 
-func (c *Client) Post(fqdn string, name string, ip *net.IP, ttl int) error {
+func (c *Client) Post(domain string, name string, ip *net.IP, ttl int) error {
 	record := &DomainRecord{RrsetTTL: ttl, RrsetValues: []*net.IP{ip}, RrsetType: rrsetType(ip)}
 
 	payload, err := json.Marshal(record)
@@ -73,7 +73,7 @@ func (c *Client) Post(fqdn string, name string, ip *net.IP, ttl int) error {
 		return err
 	}
 
-	url := fmt.Sprintf("https://api.gandi.net/v5/livedns/domains/%s/records/%s", fqdn, name)
+	url := fmt.Sprintf("https://api.gandi.net/v5/livedns/domains/%s/records/%s", domain, name)
 
 	req, err := http.NewRequest("POST", url, bytes.NewReader(payload))
 	if err != nil {
