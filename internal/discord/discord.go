@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -61,6 +62,17 @@ type Image struct {
 	URL string `json:"url"`
 }
 
+var hostname string
+
+func init() {
+	var err error
+
+	hostname, err = os.Hostname()
+	if err != nil {
+		hostname = "(unknown)"
+	}
+}
+
 func (c *Client) PostError(webhook *Webhook) error {
 	webhook.Embeds[0].Color = 15092300
 	return c.Post(webhook)
@@ -73,6 +85,7 @@ func (c *Client) PostSuccess(webhook *Webhook) error {
 
 func (c *Client) Post(webhook *Webhook) error {
 	webhook.Embeds[0].TimeStamp = time.Now().UTC().Format(time.RFC3339)
+	webhook.Embeds[0].Footer.Text = hostname
 
 	payload, err := json.Marshal(webhook)
 	if err != nil {
