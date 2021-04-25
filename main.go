@@ -36,9 +36,6 @@ How to generate your Gandi token: https://docs.gandi.net/en/domain_names/advance
 // golang.org/issue/29814 and golang.org/issue/29228.
 var Version string
 
-// This logger will send errors to Stderr and Discord
-var logErr *log.Logger
-
 func main() {
 	log.SetFlags(0)
 	flag.Usage = func() { fmt.Fprint(os.Stderr, usage) }
@@ -81,7 +78,7 @@ func main() {
 	}
 
 	discordClient := &discord.Client{WebhookURL: mustEnv("DISCORD_WEBHOOK_URL")}
-	logErr = log.New(io.MultiWriter(os.Stderr, discordClient), "", 0)
+	logErr := log.New(io.MultiWriter(os.Stderr, discordClient), "", 0)
 
 	if domainFlag == "" {
 		logErr.Fatal("error: required flag --domain is missing")
@@ -110,7 +107,7 @@ func main() {
 func mustEnv(key string) string {
 	value := os.Getenv(key)
 	if value == "" {
-		logErr.Fatalf("error: required environment variable %s is empty or missing", key)
+		log.Fatalf("error: required environment variable %s is empty or missing", key)
 	}
 	return value
 }
