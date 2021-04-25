@@ -25,8 +25,8 @@ type DomainRecord struct {
 	RrsetValues []*net.IP `json:"rrset_values,omitempty"`
 }
 
-func (c *Client) Get(fqdn string, name string) ([]*DomainRecord, error) {
-	url := fmt.Sprintf("https://api.gandi.net/v5/livedns/domains/%s/records/%s", fqdn, name)
+func (c *Client) Get(domain string, record string) ([]*DomainRecord, error) {
+	url := fmt.Sprintf("https://api.gandi.net/v5/livedns/domains/%s/records/%s", domain, record)
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -52,7 +52,7 @@ func (c *Client) Get(fqdn string, name string) ([]*DomainRecord, error) {
 	records := make([]*DomainRecord, 0)
 	err = json.Unmarshal(body, &records)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to get records response=%s", body)
+		return nil, errors.Wrapf(err, "failed to get %s/records/%s  response=%s", domain, record, body)
 	}
 
 	return records, nil
