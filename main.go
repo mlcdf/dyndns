@@ -95,7 +95,7 @@ func main() {
 		ipf = ipfinder.Ipify
 	}
 
-	gandiClient := &gandi.Client{Token: mustEnv("GANDI_TOKEN")}
+	gandiClient := gandi.New(mustEnv("GANDI_TOKEN"))
 	dyn := dyndns.New(ipf, gandiClient, discordClient)
 
 	err := dyn.Run(domainFlag, recordFlag, ttlFlag)

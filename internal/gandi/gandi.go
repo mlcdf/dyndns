@@ -13,7 +13,13 @@ import (
 )
 
 type Client struct {
-	Token string
+	Token   string
+	timeout time.Duration
+}
+
+// New creates a new Client with a default timeout
+func New(token string) *Client {
+	return &Client{token, time.Second * 20}
 }
 
 // DomainRecord represents a DNS Record
@@ -35,7 +41,7 @@ func (c *Client) Get(domain string, record string) ([]*DomainRecord, error) {
 
 	req.Header.Set("Authorization", "ApiKey "+c.Token)
 
-	client := &http.Client{Timeout: time.Second * 10}
+	client := &http.Client{Timeout: c.timeout}
 	res, err := client.Do(req)
 
 	if err != nil {
@@ -83,7 +89,7 @@ func (c *Client) Post(domain string, name string, ip *net.IP, ttl int) error {
 	req.Header.Set("Authorization", "ApiKey "+c.Token)
 	req.Header.Set("Content-type", "application/json")
 
-	client := &http.Client{Timeout: time.Second * 10}
+	client := &http.Client{Timeout: c.timeout}
 	res, err := client.Do(req)
 
 	if err != nil {
