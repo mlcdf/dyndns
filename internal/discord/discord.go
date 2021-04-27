@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/mlcdf/dyndns/internal/build"
 )
 
 type Client struct {
@@ -86,6 +88,7 @@ func (c *Client) PostSuccess(webhook *Webhook) error {
 func (c *Client) Post(webhook *Webhook) error {
 	webhook.Embeds[0].TimeStamp = time.Now().UTC().Format(time.RFC3339)
 	webhook.Embeds[0].Footer.Text = hostname
+	webhook.Username = build.Short()
 
 	payload, err := json.Marshal(webhook)
 	if err != nil {

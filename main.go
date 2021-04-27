@@ -6,8 +6,8 @@ import (
 	"io"
 	"log"
 	"os"
-	"runtime/debug"
 
+	"github.com/mlcdf/dyndns/internal/build"
 	"github.com/mlcdf/dyndns/internal/discord"
 	"github.com/mlcdf/dyndns/internal/dyndns"
 	"github.com/mlcdf/dyndns/internal/gandi"
@@ -30,11 +30,6 @@ Examples:
 How to create a Discord webhook: https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks
 How to generate your Gandi token: https://docs.gandi.net/en/domain_names/advanced_users/api.html
 `
-
-// Version can be set at link time to override debug.BuildInfo.Main.Version,
-// which is "(devel)" when building from within the module. See
-// golang.org/issue/29814 and golang.org/issue/29228.
-var Version string
 
 func main() {
 	log.SetFlags(0)
@@ -65,15 +60,7 @@ func main() {
 	flag.Parse()
 
 	if versionFlag {
-		if Version != "" {
-			fmt.Println(Version)
-			return
-		}
-		if buildInfo, ok := debug.ReadBuildInfo(); ok {
-			fmt.Println(buildInfo.Main.Version)
-			return
-		}
-		fmt.Println("(unknown)")
+		fmt.Println(build.Long())
 		return
 	}
 
