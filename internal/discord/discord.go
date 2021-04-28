@@ -116,7 +116,6 @@ func (c *Client) Write(p []byte) (n int, err error) {
 	w := &Webhook{
 		Embeds: []Embed{
 			{
-				Author:      Author{Name: "An error occured:"},
 				Description: string(p),
 			},
 		},
