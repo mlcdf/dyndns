@@ -14,7 +14,7 @@ Update Gandi LiveDNS based on the current (dynamic) ip.
 - From source (make sure `$GOPATH/bin` is in your `$PATH`):
 
 ```sh
-go get https://go.mlcdf.fr/dyndns
+go get go.mlcdf.fr/dyndns
 ```
 
 ## Setup
