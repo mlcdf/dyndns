@@ -43,7 +43,7 @@ Examples:
     dyndns --domain example.com --record "*.pi"
 ```
 
-Setup as a `cron` jon
+Setup as a `cron` job
 
 ```bash
 crontab -e
