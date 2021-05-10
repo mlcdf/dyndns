@@ -10,11 +10,11 @@ Update Gandi LiveDNS based on the current (dynamic) ip.
 
 ## Install
 
-- From [GitHub releases](https://github.com/mlcdf/dyndns/releases): download the binary corresponding to your OS and architecture.
+- From [GitHub releases](https://go.mlcdf.fr/dyndns/releases): download the binary corresponding to your OS and architecture.
 - From source (make sure `$GOPATH/bin` is in your `$PATH`):
 
 ```sh
-go get https://github.com/mlcdf/dyndns
+go get https://go.mlcdf.fr/dyndns
 ```
 
 ## Setup

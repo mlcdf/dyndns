@@ -5,10 +5,10 @@ import (
 	"log"
 	"net"
 
-	"github.com/mlcdf/dyndns/internal/discord"
-	"github.com/mlcdf/dyndns/internal/gandi"
-	"github.com/mlcdf/dyndns/internal/ipfinder"
 	"github.com/pkg/errors"
+	"go.mlcdf.fr/dyndns/internal/discord"
+	"go.mlcdf.fr/dyndns/internal/gandi"
+	"go.mlcdf.fr/dyndns/internal/ipfinder"
 )
 
 // DynDNS holds all the required dependencies

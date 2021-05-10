@@ -1,4 +1,4 @@
-module github.com/mlcdf/dyndns
+module go.mlcdf.fr/dyndns
 
 go 1.16
 

@@ -9,7 +9,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/mlcdf/dyndns/internal/build"
+	"go.mlcdf.fr/dyndns/internal/build"
 )
 
 type Client struct {

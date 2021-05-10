@@ -7,11 +7,11 @@ import (
 	"log"
 	"os"
 
-	"github.com/mlcdf/dyndns/internal/build"
-	"github.com/mlcdf/dyndns/internal/discord"
-	"github.com/mlcdf/dyndns/internal/dyndns"
-	"github.com/mlcdf/dyndns/internal/gandi"
-	"github.com/mlcdf/dyndns/internal/ipfinder"
+	"go.mlcdf.fr/dyndns/internal/build"
+	"go.mlcdf.fr/dyndns/internal/discord"
+	"go.mlcdf.fr/dyndns/internal/dyndns"
+	"go.mlcdf.fr/dyndns/internal/gandi"
+	"go.mlcdf.fr/dyndns/internal/ipfinder"
 )
 
 const usage = `Usage:
