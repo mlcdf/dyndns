@@ -34,7 +34,7 @@ Usage:
 
 Options:
     --livebox            Query the Livebox (router) to find the IP instead of api.ipify.org
-    --ttl                Time to live. Defaults to 3600
+    --ttl                Time to live in seconds. Defaults to 3600
     -V, --version        Print version
 
 Examples:
