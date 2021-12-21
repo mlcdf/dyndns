@@ -16,11 +16,12 @@ type DynDNS struct {
 	finderFunc    ipfinder.IpFinderFunc
 	gandiClient   *gandi.Client
 	discordClient *discord.Client
+	alwaysNotify  bool
 }
 
 // New creates a new DynDNS
-func New(ipf ipfinder.IpFinderFunc, g *gandi.Client, d *discord.Client) *DynDNS {
-	return &DynDNS{finderFunc: ipf, gandiClient: g, discordClient: d}
+func New(ipf ipfinder.IpFinderFunc, g *gandi.Client, d *discord.Client, alwaysNotify bool) *DynDNS {
+	return &DynDNS{finderFunc: ipf, gandiClient: g, discordClient: d, alwaysNotify: alwaysNotify}
 }
 
 // Run check the current IPs, and the one defines in the DNS records.
@@ -41,6 +42,18 @@ func (dyndns *DynDNS) Run(domain string, record string, ttl int) error {
 
 	if len(ipsToUpdate) == 0 {
 		log.Println("IP address(es) match - no further action")
+
+		if dyndns.alwaysNotify {
+			err := dyndns.discordClient.PostInfo(&discord.Webhook{
+				Embeds: []discord.Embed{
+					{
+						Title:       fmt.Sprintf("IP address(es) match for record %s.%s - no further action", record, domain),
+						Description: "To disable notifications when nothing happens, remove the `--always-notify` flag",
+					},
+				},
+			})
+			return errors.Wrap(err, "failed to send message to discord")
+		}
 		return nil
 	}
 

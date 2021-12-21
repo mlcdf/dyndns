@@ -20,6 +20,7 @@ const usage = `Usage:
 Options:
     --livebox            Query the Livebox (router) to find the IP instead of api.ipify.org
     --ttl                Time to live in seconds. Defaults to 3600
+    --always-notify      Always notify the Discord channel (even when nothing changes)
     -V, --version        Print version
 
 Examples:
@@ -41,11 +42,12 @@ func main() {
 	}
 
 	var (
-		versionFlag bool
-		domainFlag  string
-		recordFlag  string
-		ttlFlag     int = 3600
-		liveboxFlag bool
+		versionFlag      bool
+		domainFlag       string
+		recordFlag       string
+		ttlFlag          int = 3600
+		liveboxFlag      bool
+		alwaysNotifyFlag bool
 	)
 
 	flag.StringVar(&domainFlag, "domain", domainFlag, "")
@@ -56,6 +58,8 @@ func main() {
 
 	flag.BoolVar(&versionFlag, "version", versionFlag, "print the version")
 	flag.BoolVar(&versionFlag, "V", versionFlag, "print the version")
+
+	flag.BoolVar(&alwaysNotifyFlag, "always-notify", alwaysNotifyFlag, "")
 
 	flag.Parse()
 
@@ -83,7 +87,7 @@ func main() {
 	}
 
 	gandiClient := gandi.New(mustEnv("GANDI_TOKEN"))
-	dyn := dyndns.New(ipf, gandiClient, discordClient)
+	dyn := dyndns.New(ipf, gandiClient, discordClient, alwaysNotifyFlag)
 
 	err := dyn.Run(domainFlag, recordFlag, ttlFlag)
 	if err != nil {

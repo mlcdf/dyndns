@@ -75,6 +75,11 @@ func init() {
 	}
 }
 
+func (c *Client) PostInfo(webhook *Webhook) error {
+	webhook.Embeds[0].Color = 2201331
+	return c.Post(webhook)
+}
+
 func (c *Client) PostError(webhook *Webhook) error {
 	webhook.Embeds[0].Color = 15092300
 	return c.Post(webhook)
