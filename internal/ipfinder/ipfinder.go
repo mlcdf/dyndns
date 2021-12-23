@@ -8,6 +8,8 @@ import (
 	"net"
 	"net/http"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 type IpFinderFunc func() (*IPAddrs, error)
@@ -105,6 +107,14 @@ func Livebox() (*IPAddrs, error) {
 	err = json.Unmarshal(data, &content)
 	if err != nil {
 		return nil, err
+	}
+
+	if content.Result.Data.V4 == nil && content.Result.Data.V6 == nil {
+		return nil, errors.New("No IP data found in the response")
+	}
+
+	if content.Result.Data.V4 == nil && content.Result.Data.V6 == nil && content.Result.Data.V4.String() == "" && content.Result.Data.V6.String() == "" {
+		return nil, errors.New("No IP data found in the response")
 	}
 
 	return &content.Result.Data, nil
