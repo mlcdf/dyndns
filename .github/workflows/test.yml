@@ -19,3 +19,5 @@ jobs:
 
       - name: Test
         run: go test -v -race ./...
+        env:
+          GANDI_TOKEN: ${{ secrets.GANDI_TOKEN }}

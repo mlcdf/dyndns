@@ -58,7 +58,7 @@ func (dyndns *DynDNS) Run(domain string, record string, ttl int) error {
 	}
 
 	for _, ip := range ipsToUpdate {
-		err := dyndns.gandiClient.Post(domain, record, ip, ttl)
+		err := dyndns.gandiClient.Put(domain, record, ip, ttl)
 		if err != nil {
 			return err
 		}

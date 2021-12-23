@@ -71,8 +71,12 @@ func rrsetType(ip *net.IP) string {
 	return "A"
 }
 
-func (c *Client) Post(domain string, name string, ip *net.IP, ttl int) error {
-	record := &DomainRecord{RrsetTTL: ttl, RrsetValues: []*net.IP{ip}, RrsetType: rrsetType(ip)}
+func (c *Client) Put(domain string, name string, ip *net.IP, ttl int) error {
+	_record := &DomainRecord{RrsetTTL: ttl, RrsetValues: []*net.IP{ip}, RrsetType: rrsetType(ip)}
+
+	record := struct {
+		Items []*DomainRecord `json:"items"`
+	}{Items: []*DomainRecord{_record}}
 
 	payload, err := json.Marshal(record)
 	if err != nil {
@@ -81,7 +85,7 @@ func (c *Client) Post(domain string, name string, ip *net.IP, ttl int) error {
 
 	url := fmt.Sprintf("https://api.gandi.net/v5/livedns/domains/%s/records/%s", domain, name)
 
-	req, err := http.NewRequest("POST", url, bytes.NewReader(payload))
+	req, err := http.NewRequest(http.MethodPut, url, bytes.NewReader(payload))
 	if err != nil {
 		return err
 	}
@@ -95,6 +99,7 @@ func (c *Client) Post(domain string, name string, ip *net.IP, ttl int) error {
 	if err != nil {
 		return err
 	}
+	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 
@@ -103,7 +108,39 @@ func (c *Client) Post(domain string, name string, ip *net.IP, ttl int) error {
 	}
 
 	if res.StatusCode >= 400 {
-		return fmt.Errorf("failed to perform update response=%s", body)
+		return fmt.Errorf("failed to perform PUT status=%d response=%s", res.StatusCode, body)
 	}
+
+	return nil
+}
+
+func (c *Client) Delete(domain string, name string, rtype string) error {
+	url := fmt.Sprintf("https://api.gandi.net/v5/livedns/domains/%s/records/%s/%s", domain, name, rtype)
+
+	req, err := http.NewRequest(http.MethodDelete, url, nil)
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Authorization", "ApiKey "+c.Token)
+
+	client := &http.Client{Timeout: c.timeout}
+	res, err := client.Do(req)
+
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode >= 400 {
+		return fmt.Errorf("failed to perform DELETE status=%d response=%s", res.StatusCode, body)
+	}
+
 	return nil
 }
