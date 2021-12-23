@@ -71,12 +71,15 @@ func rrsetType(ip *net.IP) string {
 	return "A"
 }
 
-func (c *Client) Put(domain string, name string, ip *net.IP, ttl int) error {
-	_record := &DomainRecord{RrsetTTL: ttl, RrsetValues: []*net.IP{ip}, RrsetType: rrsetType(ip)}
-
+func (c *Client) Put(domain string, name string, ips []*net.IP, ttl int) error {
 	record := struct {
 		Items []*DomainRecord `json:"items"`
-	}{Items: []*DomainRecord{_record}}
+	}{Items: make([]*DomainRecord, 0, 2)}
+
+	for _, ip := range ips {
+		item := &DomainRecord{RrsetTTL: ttl, RrsetValues: []*net.IP{ip}, RrsetType: rrsetType(ip)}
+		record.Items = append(record.Items, item)
+	}
 
 	payload, err := json.Marshal(record)
 	if err != nil {

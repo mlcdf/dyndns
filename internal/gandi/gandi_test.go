@@ -24,7 +24,7 @@ func TestGandiPut(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = client.Put("mlcdf.fr", "golang-test", &ip, 1200)
+	err = client.Put("mlcdf.fr", "golang-test", []*net.IP{&ip}, 1200)
 	if err != nil {
 		t.Fatal(err)
 	}
