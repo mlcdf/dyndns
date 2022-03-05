@@ -51,7 +51,7 @@ crontab -e
 */10 * * * * /path/to/dyndns --domain example.com --record "*.pi"
 ```
 
-Checkout the example [contrib/deploy.sh](./contrib/deploy.sh) script.
+Check out the example [contrib/deploy.sh](./contrib/deploy.sh) script.
 
 ## Development
 
