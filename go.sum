@@ -1,2 +1,6 @@
+go.mlcdf.fr/sally v0.0.0-20220308161219-d9791dfd5138 h1:qiOSxu1FEZ6NgTMJTuW1cL1fQM8Ra0T/uvCDKTz25LU=
+go.mlcdf.fr/sally v0.0.0-20220308161219-d9791dfd5138/go.mod h1:N8XKbMbbuKVYRhwzhGpBhTg26t3WC4qF8iP9Rlq5AZo=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
+go.mlcdf.fr/sally v0.0.0-20220309114840-307e34c21196 h1:QBSd/ZEmuifyAt45+d6DzlOR9MhJWdZyom5iVXB/mMA=
+go.mlcdf.fr/sally v0.0.0-20220309114840-307e34c21196/go.mod h1:eRMvKZW/+gzdoPOKIpOeK12YzCFmkjm6h9SzmzHNvUw=

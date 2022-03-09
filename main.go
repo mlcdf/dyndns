@@ -7,11 +7,11 @@ import (
 	"log"
 	"os"
 
-	"go.mlcdf.fr/dyndns/internal/build"
 	"go.mlcdf.fr/dyndns/internal/discord"
 	"go.mlcdf.fr/dyndns/internal/dyndns"
 	"go.mlcdf.fr/dyndns/internal/gandi"
 	"go.mlcdf.fr/dyndns/internal/ipfinder"
+	"go.mlcdf.fr/sally/build"
 )
 
 const usage = `Usage:
@@ -64,7 +64,7 @@ func main() {
 	flag.Parse()
 
 	if versionFlag {
-		fmt.Println(build.Long())
+		fmt.Println("dyndns " + build.String())
 		return
 	}
 

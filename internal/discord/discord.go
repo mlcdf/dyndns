@@ -7,14 +7,12 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"time"
 
-	"go.mlcdf.fr/dyndns/internal/build"
+	"go.mlcdf.fr/sally/build"
 )
 
 type Client struct {
 	WebhookURL string
-	Username   string
 }
 
 // Webhook is the webhook object sent to discord
@@ -64,15 +62,15 @@ type Image struct {
 	URL string `json:"url"`
 }
 
-var hostname string
+func NewWebhook() *Webhook {
+	webhook := &Webhook{Username: build.String(), Embeds: make([]Embed, 0)}
 
-func init() {
-	var err error
-
-	hostname, err = os.Hostname()
+	hostname, err := os.Hostname()
 	if err != nil {
 		hostname = "(unknown)"
 	}
+	webhook.Embeds[0].Footer.Text = hostname
+	return webhook
 }
 
 func (c *Client) PostInfo(webhook *Webhook) error {
@@ -91,10 +89,6 @@ func (c *Client) PostSuccess(webhook *Webhook) error {
 }
 
 func (c *Client) Post(webhook *Webhook) error {
-	webhook.Embeds[0].TimeStamp = time.Now().UTC().Format(time.RFC3339)
-	webhook.Embeds[0].Footer.Text = hostname
-	webhook.Username = build.Short()
-
 	payload, err := json.Marshal(webhook)
 	if err != nil {
 		return fmt.Errorf("failed to marshal webhook payload: %s", err)
@@ -107,10 +101,10 @@ func (c *Client) Post(webhook *Webhook) error {
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
-
 	if err != nil {
 		return fmt.Errorf("failed read body response : %s", err)
 	}
+
 	if res.StatusCode >= 400 || err != nil {
 		return fmt.Errorf("failed to post to webhook: reason=%s status=%s", body, res.Status)
 	}
@@ -118,12 +112,10 @@ func (c *Client) Post(webhook *Webhook) error {
 }
 
 func (c *Client) Write(p []byte) (n int, err error) {
-	w := &Webhook{
-		Embeds: []Embed{
-			{
-				Description: string(p),
-			},
-		},
+	w := NewWebhook()
+	w.Embeds[0] = Embed{
+		Description: string(p),
 	}
+
 	return len(p), c.PostError(w)
 }
