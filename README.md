@@ -6,7 +6,7 @@ Update Gandi LiveDNS based on the current (dynamic) ip.
 
 - Supports both IPv4 and IPv6.
 - Reports failures and successful updates on a Discord channel. /!\ This is not optional (by design).
-- A faster IP finder is available if you have a Livebox v4 (may works on other models).
+- A faster IP finder is available if you have a Livebox v4 (may work on other models).
 
 ## Install
 
