@@ -40,6 +40,7 @@ func (c *Client) Get(domain string, record string) ([]*DomainRecord, error) {
 	}
 
 	req.Header.Set("Authorization", "ApiKey "+c.Token)
+	req.Header.Set("Content-type", "application/json")
 
 	client := &http.Client{Timeout: c.timeout}
 	res, err := client.Do(req)
@@ -126,6 +127,7 @@ func (c *Client) Delete(domain string, name string, rtype string) error {
 	}
 
 	req.Header.Set("Authorization", "ApiKey "+c.Token)
+	req.Header.Set("Content-type", "application/json")
 
 	client := &http.Client{Timeout: c.timeout}
 	res, err := client.Do(req)
