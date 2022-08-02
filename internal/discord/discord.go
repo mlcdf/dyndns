@@ -63,7 +63,7 @@ type Image struct {
 }
 
 func NewWebhook() *Webhook {
-	webhook := &Webhook{Username: build.String(), Embeds: make([]Embed, 0)}
+	webhook := &Webhook{Username: build.String(), Embeds: []Embed{Embed{}}}
 
 	hostname, err := os.Hostname()
 	if err != nil {
