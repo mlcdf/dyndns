@@ -4,8 +4,7 @@ Update Gandi LiveDNS based on the current (dynamic) ip.
 
 ## Why
 
-Some (most ?) providers ([Orange](https://orange.fr/) for example) don't provide you a fix IP address: they give you a dynamic IP that changes over time.
-This makes it hard to self-host softwares and share them publicly via a domain because you have to constantly
+Some (most ?) providers ([Orange](https://orange.fr/) for example) don't provide you with a fix IP address: they give you a dynamic IP that changes over time. This makes it hard to self-host software and share them publicly via a domain because you have to constantly
 change the IP your domain is pointing to.
 
 This program aims to solve that. It's intended to run on a always-on computer in your home (such as Raspberry Pi).
