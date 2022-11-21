@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 
@@ -14,6 +14,8 @@ import (
 type Client struct {
 	WebhookURL string
 }
+
+var _ io.Writer = (*Client)(nil)
 
 // Webhook is the webhook object sent to discord
 type Webhook struct {
@@ -63,14 +65,15 @@ type Image struct {
 }
 
 func NewWebhook() *Webhook {
-	webhook := &Webhook{Username: build.String(), Embeds: []Embed{Embed{}}}
-
 	hostname, err := os.Hostname()
 	if err != nil {
 		hostname = "(unknown)"
 	}
-	webhook.Embeds[0].Footer.Text = hostname
-	return webhook
+
+	return &Webhook{
+		Username: build.String(),
+		Embeds:   []Embed{{Footer: Footer{Text: hostname}}},
+	}
 }
 
 func (c *Client) PostInfo(webhook *Webhook) error {
@@ -100,14 +103,15 @@ func (c *Client) Post(webhook *Webhook) error {
 	}
 	defer res.Body.Close()
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		return fmt.Errorf("failed read body response : %s", err)
 	}
 
-	if res.StatusCode >= 400 || err != nil {
+	if res.StatusCode >= 400 {
 		return fmt.Errorf("failed to post to webhook: reason=%s status=%s", body, res.Status)
 	}
+
 	return nil
 }
 

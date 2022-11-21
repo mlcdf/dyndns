@@ -7,10 +7,9 @@ import (
 	"log"
 	"os"
 
+	dyndns "go.mlcdf.fr/dyndns/internal"
 	"go.mlcdf.fr/dyndns/internal/discord"
-	"go.mlcdf.fr/dyndns/internal/dyndns"
 	"go.mlcdf.fr/dyndns/internal/gandi"
-	"go.mlcdf.fr/dyndns/internal/ipfinder"
 	"go.mlcdf.fr/sally/build"
 )
 
@@ -18,7 +17,6 @@ const usage = `Usage:
     dyndns --domain [DOMAIN] --record [RECORD]
 
 Options:
-    --livebox            Query the Livebox (router) to find the IP instead of api.ipify.org
     --ttl                Time to live in seconds. Defaults to 3600
     --always-notify      Always notify the Discord channel (even when nothing changes)
     -V, --version        Print version
@@ -46,14 +44,12 @@ func main() {
 		domainFlag       string
 		recordFlag       string
 		ttlFlag          int = 3600
-		liveboxFlag      bool
 		alwaysNotifyFlag bool
 	)
 
 	flag.StringVar(&domainFlag, "domain", domainFlag, "")
 	flag.StringVar(&recordFlag, "record", recordFlag, "")
 
-	flag.BoolVar(&liveboxFlag, "livebox", liveboxFlag, "Use the Livebox IP resolver instead of api.ipify.org")
 	flag.IntVar(&ttlFlag, "ttl", ttlFlag, "Time to live. Defaults to 3600.")
 
 	flag.BoolVar(&versionFlag, "version", versionFlag, "print the version")
@@ -79,15 +75,8 @@ func main() {
 		logErr.Fatal("error: required flag --record is missing")
 	}
 
-	var ipf ipfinder.IpFinderFunc
-	if liveboxFlag {
-		ipf = ipfinder.Livebox
-	} else {
-		ipf = ipfinder.Ipify
-	}
-
 	gandiClient := gandi.New(mustEnv("GANDI_TOKEN"))
-	dyn := dyndns.New(ipf, gandiClient, discordClient, alwaysNotifyFlag)
+	dyn := dyndns.New(gandiClient, discordClient, alwaysNotifyFlag)
 
 	err := dyn.Run(domainFlag, recordFlag, ttlFlag)
 	if err != nil {

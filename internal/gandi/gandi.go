@@ -4,22 +4,26 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"time"
 
 	"github.com/pkg/errors"
+	"go.mlcdf.fr/dyndns/internal/httpx"
 )
 
 type Client struct {
-	Token   string
-	timeout time.Duration
+	httpClient *http.Client
+	Token      string
 }
 
 // New creates a new Client with a default timeout
 func New(token string) *Client {
-	return &Client{token, time.Second * 20}
+	client := httpx.DefaultClient
+	client.Timeout = time.Second * 10
+
+	return &Client{client, token}
 }
 
 // DomainRecord represents a DNS Record
@@ -42,15 +46,14 @@ func (c *Client) Get(domain string, record string) ([]*DomainRecord, error) {
 	req.Header.Set("Authorization", "ApiKey "+c.Token)
 	req.Header.Set("Content-type", "application/json")
 
-	client := &http.Client{Timeout: c.timeout}
-	res, err := client.Do(req)
+	res, err := c.httpClient.Do(req)
 
 	if err != nil {
 		return nil, err
 	}
 	defer res.Body.Close()
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 
 	if err != nil {
 		return nil, err
@@ -97,15 +100,14 @@ func (c *Client) Put(domain string, name string, ips []*net.IP, ttl int) error {
 	req.Header.Set("Authorization", "ApiKey "+c.Token)
 	req.Header.Set("Content-type", "application/json")
 
-	client := &http.Client{Timeout: c.timeout}
-	res, err := client.Do(req)
+	res, err := c.httpClient.Do(req)
 
 	if err != nil {
 		return err
 	}
 	defer res.Body.Close()
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 
 	if err != nil {
 		return err
@@ -129,15 +131,14 @@ func (c *Client) Delete(domain string, name string, rtype string) error {
 	req.Header.Set("Authorization", "ApiKey "+c.Token)
 	req.Header.Set("Content-type", "application/json")
 
-	client := &http.Client{Timeout: c.timeout}
-	res, err := client.Do(req)
+	res, err := c.httpClient.Do(req)
 
 	if err != nil {
 		return err
 	}
 	defer res.Body.Close()
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 
 	if err != nil {
 		return err

@@ -2,32 +2,102 @@ package dyndns
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"net"
 
 	"github.com/pkg/errors"
 	"go.mlcdf.fr/dyndns/internal/discord"
 	"go.mlcdf.fr/dyndns/internal/gandi"
-	"go.mlcdf.fr/dyndns/internal/ipfinder"
+	"go.mlcdf.fr/dyndns/internal/httpx"
 )
 
 // DynDNS holds all the required dependencies
 type DynDNS struct {
-	finderFunc    ipfinder.IpFinderFunc
 	gandiClient   *gandi.Client
 	discordClient *discord.Client
 	alwaysNotify  bool
 }
 
+type IPAddrs struct {
+	V4 *net.IP `json:"IPAddress"`
+	V6 *net.IP `json:"IPv6Address"`
+}
+
 // New creates a new DynDNS
-func New(ipf ipfinder.IpFinderFunc, g *gandi.Client, d *discord.Client, alwaysNotify bool) *DynDNS {
-	return &DynDNS{finderFunc: ipf, gandiClient: g, discordClient: d, alwaysNotify: alwaysNotify}
+func New(g *gandi.Client, d *discord.Client, alwaysNotify bool) *DynDNS {
+	return &DynDNS{gandiClient: g, discordClient: d, alwaysNotify: alwaysNotify}
+}
+
+func (ipAddrs *IPAddrs) String() string {
+	str := "["
+	if ipAddrs.V4 != nil {
+		str += ipAddrs.V4.String()
+	}
+	if ipAddrs.V6 != nil {
+		str += " " + ipAddrs.V6.String()
+	}
+	str += "]"
+	return str
+}
+
+func (ipAddrs *IPAddrs) Values() []*net.IP {
+	values := make([]*net.IP, 0, 2)
+	if ipAddrs.V4 != nil {
+		values = append(values, ipAddrs.V4)
+	}
+	if ipAddrs.V6 != nil {
+		values = append(values, ipAddrs.V6)
+	}
+	return values
+}
+
+// resolveIPs finds the current IP(s) addresses pointu
+func resolveIPs() (*IPAddrs, error) {
+	res, err := httpx.DefaultClient.Get("https://api64.ipify.org")
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	ip := net.ParseIP(string(body))
+	if ip == nil {
+		return nil, fmt.Errorf("failed to parse ip")
+	}
+
+	if ip.To4() != nil {
+		// if ipv4 return here because there are not IPv6
+		return &IPAddrs{V4: &ip}, nil
+	}
+
+	res, err = httpx.DefaultClient.Get("https://api.ipify.org")
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	body, err = io.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	ip2 := net.ParseIP(string(body))
+	if ip2 == nil {
+		return nil, fmt.Errorf("failed to parse ip")
+	}
+
+	return &IPAddrs{V6: &ip, V4: &ip2}, nil
 }
 
 // Run check the current IPs, and the one defines in the DNS records.
 // If necessary, it updates the DNS records and notify Discord.
 func (dyndns *DynDNS) Run(domain string, record string, ttl int) error {
-	resolvedIPs, err := dyndns.finderFunc()
+	resolvedIPs, err := resolveIPs()
 	if err != nil {
 		return err
 	}
@@ -94,7 +164,7 @@ func (dyndns *DynDNS) notifyDiscord(domain string, record string, ips []*net.IP)
 	return errors.Wrap(err, "failed to post success message to Discord")
 }
 
-func matchIPs(resolvedIPs *ipfinder.IPAddrs, dnsRecords []*gandi.DomainRecord) []*net.IP {
+func matchIPs(resolvedIPs *IPAddrs, dnsRecords []*gandi.DomainRecord) []*net.IP {
 	toUpdate := make([]*net.IP, 0, 2)
 
 	isIpV4ToUpdate := false
