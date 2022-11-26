@@ -1,0 +1,14 @@
+//go:build testbincover
+// +build testbincover
+
+package main
+
+import (
+	"testing"
+
+	"github.com/confluentinc/bincover"
+)
+
+func TestBincoverRunMain(t *testing.T) {
+	bincover.RunTest(func() { bincover.ExitCode = int(mainRun()) })
+}

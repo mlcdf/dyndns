@@ -1,21 +1,24 @@
-//go:build smocker
-
-package httpx
+package main
 
 import (
 	"log"
 	"net/http"
 	"net/url"
 	"os"
+	"time"
 )
 
-var DefaultClient = &http.Client{Transport: &TestTransport{}}
+var defaultHTTP = &http.Client{Timeout: 20 * time.Second}
 
 type TestTransport struct{}
 
 var smockerURL *url.URL
 
 func init() {
+	if isTest == "false" {
+		return
+	}
+
 	endpoint := os.Getenv("SMOCKER_ENDPOINT")
 	if endpoint == "" {
 		log.Fatalf("missing required SMOCKER_ENDPOINT environment variable")
@@ -26,6 +29,8 @@ func init() {
 	if err != nil {
 		log.Fatalf("error parsing %s as an url.URL", endpoint)
 	}
+
+	defaultHTTP.Transport = &TestTransport{}
 }
 
 func (s *TestTransport) RoundTrip(r *http.Request) (*http.Response, error) {

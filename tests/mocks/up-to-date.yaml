@@ -1,0 +1,42 @@
+- request:
+    path: /
+    method: GET
+    headers:
+      Host: api64.ipify.org
+  response:
+    status: 200
+    headers:
+      Content-Type: text/plain
+    body: '0000:cb19:96a:7c00:13b0:5ba3:16ae:6c82'
+
+- request:
+    path: /
+    method: GET
+    headers:
+      Host: api.ipify.org
+  response:
+    status: 200
+    headers:
+      Content-Type: text/plain
+    body: '109.215.101.49'
+
+- request:
+    path: /v5/livedns/domains/example.com/records/www
+    method: GET
+    headers:
+      Content-Type: application/json
+      Host: api.gandi.net
+  response:
+    status: 200
+    headers:
+      Content-Type: application/json
+    body: |
+      [
+        {
+          "rrset_type": "A",
+          "rrset_ttl": 3600,
+          "rrset_name": "www",
+          "rrset_href": "",
+          "rrset_values": ["109.215.101.49", "0000:cb19:96a:7c00:13b0:5ba3:16ae:6c82"]
+        }
+      ]

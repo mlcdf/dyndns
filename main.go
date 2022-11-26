@@ -7,9 +7,6 @@ import (
 	"log"
 	"os"
 
-	dyndns "go.mlcdf.fr/dyndns/internal"
-	"go.mlcdf.fr/dyndns/internal/discord"
-	"go.mlcdf.fr/dyndns/internal/gandi"
 	"go.mlcdf.fr/sally/build"
 )
 
@@ -30,13 +27,30 @@ How to create a Discord webhook: https://support.discord.com/hc/en-us/articles/2
 How to generate your Gandi token: https://docs.gandi.net/en/domain_names/advanced_users/api.html
 `
 
+type exitCode int
+
+const (
+	exitOK    exitCode = 0
+	exitError exitCode = 1
+)
+
+var (
+	// Injected from linker flags like `go build -ldflags "-X main.version=$VERSION" -X ...`
+	isTest = "false"
+)
+
 func main() {
+	code := int(mainRun())
+	os.Exit(code)
+}
+
+func mainRun() exitCode {
 	log.SetFlags(0)
 	flag.Usage = func() { fmt.Fprint(os.Stderr, usage) }
 
 	if len(os.Args) == 1 {
 		flag.Usage()
-		os.Exit(0)
+		return exitOK
 	}
 
 	var (
@@ -60,34 +74,56 @@ func main() {
 	flag.Parse()
 
 	if versionFlag {
-		fmt.Println("dyndns " + build.String())
-		return
+		fmt.Fprintln(os.Stdout, "dyndns "+build.String())
+		return exitOK
 	}
 
-	discordClient := &discord.Client{WebhookURL: mustEnv("DISCORD_WEBHOOK_URL")}
+	webhook := os.Getenv("DISCORD_WEBHOOK_URL")
+	if webhook == "" {
+		log.Println("error: required environment variable DISCORD_WEBHOOK_URL is empty or missing")
+		return exitError
+	}
+
+	discordClient := &discordClient{webhook}
 	logErr := log.New(io.MultiWriter(os.Stderr, discordClient), "", 0)
 
 	if domainFlag == "" {
-		logErr.Fatal("error: required flag --domain is missing")
+		logErr.Println("error: required flag --domain is missing")
+		return exitError
 	}
 
 	if recordFlag == "" {
-		logErr.Fatal("error: required flag --record is missing")
+		logErr.Println("error: required flag --record is missing")
+		return exitError
 	}
 
-	gandiClient := gandi.New(mustEnv("GANDI_TOKEN"))
-	dyn := dyndns.New(gandiClient, discordClient, alwaysNotifyFlag)
+	token := os.Getenv("GANDI_TOKEN")
+	if token == "" {
+		log.Println("error: required environment variable GANDI_TOKEN is empty or missing")
+		return exitError
+	}
 
-	err := dyn.Run(domainFlag, recordFlag, ttlFlag)
+	gandiClient := &gandiClient{token}
+
+	dyn := &DynDNS{
+		gandiClient,
+		discordClient,
+	}
+
+	err := dyn.execute(domainFlag, recordFlag, ttlFlag, alwaysNotifyFlag)
 	if err != nil {
-		logErr.Fatalf("error: %v", err)
+		logErr.Printf("error: %v", err)
+		return exitError
 	}
+
+	return exitOK
 }
 
-func mustEnv(key string) string {
-	value := os.Getenv(key)
-	if value == "" {
-		log.Fatalf("error: required environment variable %s is empty or missing", key)
-	}
-	return value
-}
+// func exit(code int) {
+// 	if isTest == "true" {
+// 		bincover.ExitCode = code
+// 		os.Exit(0)
+// 	} else {
+// 		os.Exit(code)
+// 	}
+// }
