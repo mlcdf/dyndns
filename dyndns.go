@@ -99,9 +99,9 @@ func (dyndns *DynDNS) execute(domain string, record string, ttl int, alwaysNotif
 		return err
 	}
 
-	ipsToUpdate := dyndns.matchIPs(resolvedIPs, dnsRecords)
+	needUpdate := dyndns.matchIPs(resolvedIPs, dnsRecords)
 
-	if len(ipsToUpdate) == 0 {
+	if !needUpdate {
 		log.Println("IP address(es) match - no further action")
 
 		if alwaysNotify {
@@ -118,7 +118,7 @@ func (dyndns *DynDNS) execute(domain string, record string, ttl int, alwaysNotif
 		return nil
 	}
 
-	err = dyndns.gandiClient.put(domain, record, ipsToUpdate, ttl)
+	err = dyndns.gandiClient.put(domain, record, []*net.IP{resolvedIPs.V4, resolvedIPs.V6}, ttl)
 	if err != nil {
 		return err
 	}
@@ -155,37 +155,25 @@ func (dyndns *DynDNS) notifyDiscord(domain string, record string, ips []*net.IP)
 	return errors.Wrap(err, "failed to post success message to Discord")
 }
 
-func (dyndns *DynDNS) matchIPs(resolvedIPs *IPAddrs, dnsRecords []*domainRecord) []*net.IP {
-	toUpdate := make([]*net.IP, 0, 2)
-
-	isIpV4UpToDate := false
-	isIpV6UpTodate := false
-
+func (dyndns *DynDNS) matchIPs(resolvedIPs *IPAddrs, dnsRecords []*domainRecord) bool {
 	ipsFromDNS := make([]*net.IP, 0, 2)
+
+	var foundIPV4 bool
+	var foundIPV6 bool
 
 	for _, records := range dnsRecords {
 		for _, rrsetValue := range records.RrsetValues {
 			ipsFromDNS = append(ipsFromDNS, rrsetValue)
 
 			if resolvedIPs.V4 != nil && rrsetValue.Equal(*resolvedIPs.V4) {
-				isIpV4UpToDate = true
-			}
-
-			if resolvedIPs.V6 != nil && rrsetValue.Equal(*resolvedIPs.V6) {
-				isIpV6UpTodate = true
+				foundIPV4 = true
+			} else if resolvedIPs.V6 != nil && rrsetValue.Equal(*resolvedIPs.V6) {
+				foundIPV6 = true
 			}
 		}
 	}
 
 	log.Printf("IP(s) from DNS:        %s", ipsFromDNS)
 
-	if resolvedIPs.V4 != nil && !isIpV4UpToDate {
-		toUpdate = append(toUpdate, resolvedIPs.V4)
-	}
-
-	if resolvedIPs.V6 != nil && !isIpV6UpTodate {
-		toUpdate = append(toUpdate, resolvedIPs.V6)
-	}
-
-	return toUpdate
+	return !foundIPV4 || !foundIPV6
 }

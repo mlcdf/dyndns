@@ -51,6 +51,13 @@
           "items": [
             {
               "rrset_ttl": 3600,
+              "rrset_type": "A",
+              "rrset_values": [
+                "109.215.101.49"
+              ]
+            },
+            {
+              "rrset_ttl": 3600,
               "rrset_type": "AAAA",
               "rrset_values": [
                 "0:cb19:96a:7c00:13b0:5ba3:16ae:6c82"
