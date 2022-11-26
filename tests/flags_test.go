@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"os"
 	"regexp"
 	"strings"
 	"testing"
@@ -46,6 +47,13 @@ func TestVersion(t *testing.T) {
 }
 
 func TestRequiredFlags(t *testing.T) {
+	// Unset existing env vars
+	err := os.Setenv("GANDI_TOKEN", "")
+	require.NoError(t, err)
+
+	err = os.Setenv("DISCORD_WEBHOOK_URL", "")
+	require.NoError(t, err)
+
 	env := []string{
 		"GANDI_TOKEN=xxx",
 		"DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/xxx",
