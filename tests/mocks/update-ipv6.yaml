@@ -45,9 +45,19 @@
     path: /v5/livedns/domains/example.com/records/www
     method: PUT
     body:
-      'items[0].rrset_ttl': 3600
-      'items[0].rrset_type': AAAA
-      'items[0].rrset_values[0]': '0:cb19:96a:7c00:13b0:5ba3:16ae:6c82'
+      matcher: ShouldEqualJSON
+      value: >
+        {
+          "items": [
+            {
+              "rrset_ttl": 3600,
+              "rrset_type": "AAAA",
+              "rrset_values": [
+                "0:cb19:96a:7c00:13b0:5ba3:16ae:6c82"
+              ]
+            }
+          ]
+        }
     headers:
       Content-Type: application/json
       Host: api.gandi.net
