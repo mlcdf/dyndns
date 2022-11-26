@@ -9,31 +9,36 @@ jobs:
     name: Upload Release Asset
     runs-on: ubuntu-latest
     steps:
-      - name: Install Go
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: ">=1.18.0-rc.1"
-      - name: Checkout repository
-        uses: actions/checkout@v2
+          go-version: "1.19"
+          check-latest: true
+          cache: true
+
       - name: Build binaries
         run: |
           export VERSION=$(git describe --tags)
           export CGO_ENABLED=0
           export LDFLAGS="-X 'go.mlcdf.fr/sally/build.Version=${VERSION}'"
 
-          GOOS=linux GOARCH=amd64 go build -o "dyndns-${VERSION}-${GOOS}-${GOARCH}" -ldflags ${LDFLAGS}
-          GOOS=linux GOARCH=arm GOARM=6 go build -o "dyndns-${VERSION}-${GOOS}-${GOARCH}" -ldflags ${LDFLAGS}
-          GOOS=linux GOARCH=arm64 go build -o "dyndns-${VERSION}-${GOOS}-${GOARCH}" -ldflags ${LDFLAGS}
-          GOOS=darwin GOARCH=amd64 go build -o "dyndns-${VERSION}-${GOOS}-${GOARCH}" -ldflags ${LDFLAGS}
-          GOOS=windows GOARCH=amd64 go build -o "dyndns-${VERSION}-${GOOS}-${GOARCH}.exe" -ldflags ${LDFLAGS}
+          export GOOS=linux GOARCH=amd64 && go build -v -o "dyndns-${VERSION}-${GOOS}-${GOARCH}" -ldflags "${LDFLAGS}"
+          export GOOS=linux GOARCH=arm GOARM=6 && go build -o "dyndns-${VERSION}-${GOOS}-${GOARCH}" -ldflags "${LDFLAGS}"
+          export GOOS=linux GOARCH=arm64 && go build -o "dyndns-${VERSION}-${GOOS}-${GOARCH}" -ldflags "${LDFLAGS}"
+          export GOOS=darwin GOARCH=amd64 && go build -o "dyndns-${VERSION}-${GOOS}-${GOARCH}" -ldflags "${LDFLAGS}"
+          export GOOS=windows GOARCH=amd64 && go build -o "dyndns-${VERSION}-${GOOS}-${GOARCH}.exe" -ldflags "${LDFLAGS}"
+
       - name: Upload release artifacts
-        uses: actions/github-script@v3
+        uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require("fs").promises;
             const { repo: { owner, repo }, sha } = context;
-            const release = await github.repos.getReleaseByTag({
+            const release = await github.rest.repos.getReleaseByTag({
               owner, repo,
               tag: process.env.GITHUB_REF.replace("refs/tags/", ""),
             });
@@ -41,7 +46,7 @@ jobs:
             for (let file of await fs.readdir(".")) {
               if (!file.startsWith("dyndns-")) continue;
               console.log("Uploading", file);
-              await github.repos.uploadReleaseAsset({
+              await github.rest.repos.uploadReleaseAsset({
                 owner, repo,
                 release_id: release.data.id,
                 name: file,
