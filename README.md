@@ -1,7 +1,7 @@
 # dyndns
 
 [![test](https://github.com/mlcdf/dyndns/actions/workflows/test.yml/badge.svg)](https://github.com/mlcdf/dyndns/actions/workflows/test.yml)
-[![coverage](https://raw.githubusercontent.com/mlcdf/dyndns/coverage/badge.svg)](https://raw.githubusercontent.com/mlcdf/dyndns/coverage/badge.svg)
+[![coverage](https://raw.githubusercontent.com/mlcdf/dyndns/coverage/badge.svg)](https://mlcdf.github.io/dyndns/report.html)
 
 Update Gandi LiveDNS based on the current (dynamic) ip.
 
