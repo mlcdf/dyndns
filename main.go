@@ -7,10 +7,6 @@ import (
 	"log"
 	"os"
 
-	"go.mlcdf.fr/dyndns/internal/discord"
-	"go.mlcdf.fr/dyndns/internal/dyndns"
-	"go.mlcdf.fr/dyndns/internal/gandi"
-	"go.mlcdf.fr/dyndns/internal/ipfinder"
 	"go.mlcdf.fr/sally/build"
 )
 
@@ -18,7 +14,6 @@ const usage = `Usage:
     dyndns --domain [DOMAIN] --record [RECORD]
 
 Options:
-    --livebox            Query the Livebox (router) to find the IP instead of api.ipify.org
     --ttl                Time to live in seconds. Defaults to 3600
     --always-notify      Always notify the Discord channel (even when nothing changes)
     -V, --version        Print version
@@ -32,13 +27,30 @@ How to create a Discord webhook: https://support.discord.com/hc/en-us/articles/2
 How to generate your Gandi token: https://docs.gandi.net/en/domain_names/advanced_users/api.html
 `
 
+type exitCode int
+
+const (
+	exitOK    exitCode = 0
+	exitError exitCode = 1
+)
+
+var (
+	// Injected from linker flags like `go build -ldflags "-X main.version=$VERSION" -X ...`
+	isTest = "false"
+)
+
 func main() {
+	code := int(mainRun())
+	os.Exit(code)
+}
+
+func mainRun() exitCode {
 	log.SetFlags(0)
 	flag.Usage = func() { fmt.Fprint(os.Stderr, usage) }
 
 	if len(os.Args) == 1 {
 		flag.Usage()
-		os.Exit(0)
+		return exitOK
 	}
 
 	var (
@@ -46,14 +58,12 @@ func main() {
 		domainFlag       string
 		recordFlag       string
 		ttlFlag          int = 3600
-		liveboxFlag      bool
 		alwaysNotifyFlag bool
 	)
 
 	flag.StringVar(&domainFlag, "domain", domainFlag, "")
 	flag.StringVar(&recordFlag, "record", recordFlag, "")
 
-	flag.BoolVar(&liveboxFlag, "livebox", liveboxFlag, "Use the Livebox IP resolver instead of api.ipify.org")
 	flag.IntVar(&ttlFlag, "ttl", ttlFlag, "Time to live. Defaults to 3600.")
 
 	flag.BoolVar(&versionFlag, "version", versionFlag, "print the version")
@@ -64,41 +74,56 @@ func main() {
 	flag.Parse()
 
 	if versionFlag {
-		fmt.Println("dyndns " + build.String())
-		return
+		fmt.Fprintln(os.Stdout, "dyndns "+build.String())
+		return exitOK
 	}
 
-	discordClient := &discord.Client{WebhookURL: mustEnv("DISCORD_WEBHOOK_URL")}
+	webhook := os.Getenv("DISCORD_WEBHOOK_URL")
+	if webhook == "" {
+		log.Println("error: required environment variable DISCORD_WEBHOOK_URL is empty or missing")
+		return exitError
+	}
+
+	discordClient := &discordClient{webhook}
 	logErr := log.New(io.MultiWriter(os.Stderr, discordClient), "", 0)
 
 	if domainFlag == "" {
-		logErr.Fatal("error: required flag --domain is missing")
+		logErr.Println("error: required flag --domain is missing")
+		return exitError
 	}
 
 	if recordFlag == "" {
-		logErr.Fatal("error: required flag --record is missing")
+		logErr.Println("error: required flag --record is missing")
+		return exitError
 	}
 
-	var ipf ipfinder.IpFinderFunc
-	if liveboxFlag {
-		ipf = ipfinder.Livebox
-	} else {
-		ipf = ipfinder.Ipify
+	token := os.Getenv("GANDI_TOKEN")
+	if token == "" {
+		log.Println("error: required environment variable GANDI_TOKEN is empty or missing")
+		return exitError
 	}
 
-	gandiClient := gandi.New(mustEnv("GANDI_TOKEN"))
-	dyn := dyndns.New(ipf, gandiClient, discordClient, alwaysNotifyFlag)
+	gandiClient := &gandiClient{token}
 
-	err := dyn.Run(domainFlag, recordFlag, ttlFlag)
+	dyn := &DynDNS{
+		gandiClient,
+		discordClient,
+	}
+
+	err := dyn.execute(domainFlag, recordFlag, ttlFlag, alwaysNotifyFlag)
 	if err != nil {
-		logErr.Fatalf("error: %v", err)
+		logErr.Printf("error: %v", err)
+		return exitError
 	}
+
+	return exitOK
 }
 
-func mustEnv(key string) string {
-	value := os.Getenv(key)
-	if value == "" {
-		log.Fatalf("error: required environment variable %s is empty or missing", key)
-	}
-	return value
-}
+// func exit(code int) {
+// 	if isTest == "true" {
+// 		bincover.ExitCode = code
+// 		os.Exit(0)
+// 	} else {
+// 		os.Exit(code)
+// 	}
+// }

@@ -1,5 +1,8 @@
 # dyndns
 
+[![test](https://github.com/mlcdf/dyndns/actions/workflows/test.yml/badge.svg)](https://github.com/mlcdf/dyndns/actions/workflows/test.yml)
+[![coverage](https://raw.githubusercontent.com/mlcdf/dyndns/coverage/badge.svg)](https://raw.githubusercontent.com/mlcdf/dyndns/coverage/badge.svg)
+
 Update Gandi LiveDNS based on the current (dynamic) ip.
 
 ## Why
@@ -21,7 +24,7 @@ This program aims to solve that. It's intended to run on a always-on computer in
 - From source (make sure `$GOPATH/bin` is in your `$PATH`):
 
 ```sh
-go get go.mlcdf.fr/dyndns
+go install go.mlcdf.fr/dyndns
 ```
 
 ## Setup
@@ -72,4 +75,9 @@ Run the tests
 
 ```sh
 go test ./...
+```
+
+Force `go test` to run all the tests (and don't kill the docker-compose containers so the following runs will be faster).
+```sh
+./scrits/test.sh
 ```

@@ -1,0 +1,3 @@
+#!/bin/bash
+
+GOFLAGS="-count=1" DEV=true go test ./...

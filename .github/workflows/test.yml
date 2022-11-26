@@ -1,8 +1,6 @@
 name: test
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
 
@@ -10,14 +8,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: ">=1.18.0-rc.1"
+          go-version: "1.19"
+          check-latest: true
+          cache: true
 
       - name: Test
         run: go test -v -race ./...
-        env:
-          GANDI_TOKEN: ${{ secrets.GANDI_TOKEN }}

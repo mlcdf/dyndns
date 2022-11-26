@@ -1,0 +1,16 @@
+version: "3"
+services:
+  smocker:
+    image: thiht/smocker
+    ports:
+      - 8080:8080
+      - 8081:8081
+
+  db:
+    image: postgres
+    environment:
+      POSTGRES_DB: database
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - 8082:5432

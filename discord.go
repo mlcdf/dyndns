@@ -1,19 +1,20 @@
-package discord
+package main
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
+	"io"
 	"os"
 
 	"go.mlcdf.fr/sally/build"
 )
 
-type Client struct {
+type discordClient struct {
 	WebhookURL string
 }
+
+var _ io.Writer = (*discordClient)(nil)
 
 // Webhook is the webhook object sent to discord
 type Webhook struct {
@@ -63,55 +64,57 @@ type Image struct {
 }
 
 func NewWebhook() *Webhook {
-	webhook := &Webhook{Username: build.String(), Embeds: []Embed{Embed{}}}
-
 	hostname, err := os.Hostname()
 	if err != nil {
 		hostname = "(unknown)"
 	}
-	webhook.Embeds[0].Footer.Text = hostname
-	return webhook
+
+	return &Webhook{
+		Username: build.String(),
+		Embeds:   []Embed{{Footer: Footer{Text: hostname}}},
+	}
 }
 
-func (c *Client) PostInfo(webhook *Webhook) error {
+func (c *discordClient) PostInfo(webhook *Webhook) error {
 	webhook.Embeds[0].Color = 2201331
 	return c.Post(webhook)
 }
 
-func (c *Client) PostError(webhook *Webhook) error {
+func (c *discordClient) PostError(webhook *Webhook) error {
 	webhook.Embeds[0].Color = 15092300
 	return c.Post(webhook)
 }
 
-func (c *Client) PostSuccess(webhook *Webhook) error {
+func (c *discordClient) PostSuccess(webhook *Webhook) error {
 	webhook.Embeds[0].Color = 5747840
 	return c.Post(webhook)
 }
 
-func (c *Client) Post(webhook *Webhook) error {
+func (c *discordClient) Post(webhook *Webhook) error {
 	payload, err := json.Marshal(webhook)
 	if err != nil {
 		return fmt.Errorf("failed to marshal webhook payload: %s", err)
 	}
 
-	res, err := http.Post(c.WebhookURL, "application/json", bytes.NewReader(payload))
+	res, err := defaultHTTP.Post(c.WebhookURL, "application/json", bytes.NewReader(payload))
 	if err != nil {
 		return fmt.Errorf("failed to post to webhook: %s", err)
 	}
 	defer res.Body.Close()
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		return fmt.Errorf("failed read body response : %s", err)
 	}
 
-	if res.StatusCode >= 400 || err != nil {
+	if res.StatusCode >= 400 {
 		return fmt.Errorf("failed to post to webhook: reason=%s status=%s", body, res.Status)
 	}
+
 	return nil
 }
 
-func (c *Client) Write(p []byte) (n int, err error) {
+func (c *discordClient) Write(p []byte) (n int, err error) {
 	w := NewWebhook()
 	w.Embeds[0] = Embed{
 		Description: string(p),
