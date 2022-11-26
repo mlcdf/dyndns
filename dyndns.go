@@ -105,7 +105,7 @@ func (dyndns *DynDNS) execute(domain string, record string, ttl int, alwaysNotif
 		log.Println("IP address(es) match - no further action")
 
 		if alwaysNotify {
-			err := dyndns.discordClient.PostInfo(&Webhook{
+			err := dyndns.discordClient.postInfo(&Webhook{
 				Embeds: []Embed{
 					{
 						Title:       fmt.Sprintf("IP address(es) match for record %s.%s - no further action", record, domain),
@@ -143,7 +143,7 @@ func (dyndns *DynDNS) notifyDiscord(domain string, record string, ips []*net.IP)
 		fields = append(fields, *field)
 	}
 
-	err := dyndns.discordClient.PostSuccess(&Webhook{
+	err := dyndns.discordClient.postSuccess(&Webhook{
 		Embeds: []Embed{
 			{
 				Title:       fmt.Sprintf("DNS record for %s.%s updated with the new IP adresses", record, domain),
@@ -158,8 +158,8 @@ func (dyndns *DynDNS) notifyDiscord(domain string, record string, ips []*net.IP)
 func (dyndns *DynDNS) matchIPs(resolvedIPs *IPAddrs, dnsRecords []*domainRecord) []*net.IP {
 	toUpdate := make([]*net.IP, 0, 2)
 
-	isIpV4ToUpdate := false
-	isIpV6ToUpdate := false
+	isIpV4UpToDate := false
+	isIpV6UpTodate := false
 
 	ipsFromDNS := make([]*net.IP, 0, 2)
 
@@ -168,22 +168,22 @@ func (dyndns *DynDNS) matchIPs(resolvedIPs *IPAddrs, dnsRecords []*domainRecord)
 			ipsFromDNS = append(ipsFromDNS, rrsetValue)
 
 			if resolvedIPs.V4 != nil && rrsetValue.Equal(*resolvedIPs.V4) {
-				isIpV4ToUpdate = true
+				isIpV4UpToDate = true
 			}
 
 			if resolvedIPs.V6 != nil && rrsetValue.Equal(*resolvedIPs.V6) {
-				isIpV6ToUpdate = true
+				isIpV6UpTodate = true
 			}
 		}
 	}
 
 	log.Printf("IP(s) from DNS:        %s", ipsFromDNS)
 
-	if resolvedIPs.V4 != nil && !isIpV4ToUpdate {
+	if resolvedIPs.V4 != nil && !isIpV4UpToDate {
 		toUpdate = append(toUpdate, resolvedIPs.V4)
 	}
 
-	if resolvedIPs.V6 != nil && !isIpV6ToUpdate {
+	if resolvedIPs.V6 != nil && !isIpV6UpTodate {
 		toUpdate = append(toUpdate, resolvedIPs.V6)
 	}
 

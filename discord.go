@@ -63,34 +63,22 @@ type Image struct {
 	URL string `json:"url"`
 }
 
-func NewWebhook() *Webhook {
-	hostname, err := os.Hostname()
-	if err != nil {
-		hostname = "(unknown)"
-	}
-
-	return &Webhook{
-		Username: build.String(),
-		Embeds:   []Embed{{Footer: Footer{Text: hostname}}},
-	}
-}
-
-func (c *discordClient) PostInfo(webhook *Webhook) error {
+func (c *discordClient) postInfo(webhook *Webhook) error {
 	webhook.Embeds[0].Color = 2201331
-	return c.Post(webhook)
+	return c.post(webhook)
 }
 
-func (c *discordClient) PostError(webhook *Webhook) error {
+func (c *discordClient) postError(webhook *Webhook) error {
 	webhook.Embeds[0].Color = 15092300
-	return c.Post(webhook)
+	return c.post(webhook)
 }
 
-func (c *discordClient) PostSuccess(webhook *Webhook) error {
+func (c *discordClient) postSuccess(webhook *Webhook) error {
 	webhook.Embeds[0].Color = 5747840
-	return c.Post(webhook)
+	return c.post(webhook)
 }
 
-func (c *discordClient) Post(webhook *Webhook) error {
+func (c *discordClient) post(webhook *Webhook) error {
 	payload, err := json.Marshal(webhook)
 	if err != nil {
 		return fmt.Errorf("failed to marshal webhook payload: %s", err)
@@ -115,10 +103,19 @@ func (c *discordClient) Post(webhook *Webhook) error {
 }
 
 func (c *discordClient) Write(p []byte) (n int, err error) {
-	w := NewWebhook()
+	hostname, err := os.Hostname()
+	if err != nil {
+		hostname = "(unknown)"
+	}
+
+	w := &Webhook{
+		Username: build.String(),
+		Embeds:   []Embed{{Footer: Footer{Text: hostname}}},
+	}
+
 	w.Embeds[0] = Embed{
 		Description: string(p),
 	}
 
-	return len(p), c.PostError(w)
+	return len(p), c.postError(w)
 }
