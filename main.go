@@ -118,12 +118,3 @@ func mainRun() exitCode {
 
 	return exitOK
 }
-
-// func exit(code int) {
-// 	if isTest == "true" {
-// 		bincover.ExitCode = code
-// 		os.Exit(0)
-// 	} else {
-// 		os.Exit(code)
-// 	}
-// }
