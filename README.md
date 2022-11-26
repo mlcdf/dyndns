@@ -15,8 +15,8 @@ This program aims to solve that. It's intended to run on a always-on computer in
 ## Highlights
 
 - Supports both IPv4 and IPv6.
+- Ship as single binary with no OS dependencies.
 - Reports failures and successful updates on a Discord channel. /!\ This is not optional (by design).
-- A faster IP finder is available if you have a Livebox v4 (may work on other models).
 
 ## Install
 
@@ -65,6 +65,10 @@ Check out the example [contrib/deploy.sh](./contrib/deploy.sh) script.
 
 ## Development
 
+Requirements:
+- go version > 1.19+
+- docker-compose version > 2, installed as docker plugins (invoked via `docker compose`)
+
 Run the app
 
 ```sh
@@ -81,3 +85,7 @@ Force `go test` to run all the tests (and don't kill the docker-compose containe
 ```sh
 ./scrits/test.sh
 ```
+
+## License
+
+[MIT](https://choosealicense.com/licenses/mit/)
