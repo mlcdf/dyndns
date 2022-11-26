@@ -53,6 +53,12 @@ func TestDyndns(t *testing.T) {
 			mockfile:     "mocks/update-both.yaml",
 			wantExitCode: 0,
 		},
+		{
+			name:         "update both with ttl 1337",
+			args:         "--domain example.com --record www --always-notify --ttl 1337",
+			mockfile:     "mocks/update-both-with-ttl.yaml",
+			wantExitCode: 0,
+		},
 	}
 
 	for _, tt := range tests {
