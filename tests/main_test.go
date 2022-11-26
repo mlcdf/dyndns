@@ -4,7 +4,6 @@
 package tests
 
 import (
-	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -20,8 +19,6 @@ const binPath = "../dist/dyndns.test"
 var collector *bincover.CoverageCollector
 
 func TestMain(m *testing.M) {
-	flag.Parse()
-
 	dockerComposeUp()
 	buildTestBinary()
 
