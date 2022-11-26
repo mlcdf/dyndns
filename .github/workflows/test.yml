@@ -21,3 +21,34 @@ jobs:
 
       - name: Test
         run: go test -v -race ./...
+
+      - name: Generate coverage report in HTML
+        run: go tool cover -html dist/coverage.out -o report.html
+
+      - name: GitHub Badge
+        run: |
+          total=$(go tool cover -func dist/coverage.out | grep total| grep -Eo '[0-9]+\.[0-9]+')
+          if (( $(echo "$total <= 50" | bc -l) )) ; then
+            COLOR=red
+          elif (( $(echo "$total > 80" | bc -l) )); then
+            COLOR=green
+          else
+            COLOR=orange
+          fi
+          mkdir -p dist
+          cp report.html dist/report.html
+          curl "https://img.shields.io/badge/coverage-$total%25-$COLOR" > dist/badge.svg
+          cd dist
+          git init
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add .
+          git commit -m "Updated coverage"
+
+      - name: Push changes
+        uses: mlcdf/github-push-action@master
+        with:
+          github_token: ${{ secrets.github_token }}
+          branch: coverage
+          force: true
+          directory: dist
