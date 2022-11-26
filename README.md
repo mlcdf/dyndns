@@ -43,8 +43,8 @@ Usage:
     dyndns --domain [DOMAIN] --record [RECORD]
 
 Options:
-    --livebox            Query the Livebox (router) to find the IP instead of api.ipify.org
     --ttl                Time to live in seconds. Defaults to 3600
+    --always-notify      Always notify the Discord channel (even when nothing changes)
     -V, --version        Print version
 
 Examples:
