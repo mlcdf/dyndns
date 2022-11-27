@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"go.mlcdf.fr/dyndns/tests/smockertest"
 )
 
 func TestDyndns(t *testing.T) {
@@ -64,7 +65,7 @@ func TestDyndns(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.mockfile != "" {
-				err := pushMock(tt.mockfile)
+				err := smockertest.PushMock(tt.mockfile)
 				require.NoError(t, err)
 			}
 

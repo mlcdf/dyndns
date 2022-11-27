@@ -67,7 +67,7 @@ Check out the example [contrib/deploy.sh](./contrib/deploy.sh) script.
 
 Requirements:
 - go version > 1.19+
-- docker-compose version > 2, installed as docker plugins (invoked via `docker compose`)
+- docker
 
 Run the app
 
@@ -81,7 +81,7 @@ Run the tests
 go test ./...
 ```
 
-Force `go test` to run all the tests (and don't kill the docker-compose containers so the following runs will be faster).
+Force `go test` to run all the tests (by disabling caching)
 ```sh
 ./scrits/test.sh
 ```
