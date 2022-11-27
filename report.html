@@ -1,0 +1,778 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>dyndns: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">go.mlcdf.fr/dyndns/discord.go (84.0%)</option>
+				
+				<option value="file1">go.mlcdf.fr/dyndns/dyndns.go (87.0%)</option>
+				
+				<option value="file2">go.mlcdf.fr/dyndns/gandi.go (79.5%)</option>
+				
+				<option value="file3">go.mlcdf.fr/dyndns/http.go (100.0%)</option>
+				
+				<option value="file4">go.mlcdf.fr/dyndns/main.go (90.5%)</option>
+				
+				<option value="file5">go.mlcdf.fr/dyndns/tests/smockertest/client.go (23.1%)</option>
+				
+				<option value="file6">go.mlcdf.fr/dyndns/tests/smockertest/server.go (0.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package main
+
+import (
+        "bytes"
+        "encoding/json"
+        "fmt"
+        "io"
+        "os"
+
+        "go.mlcdf.fr/sally/build"
+)
+
+type discordClient struct {
+        WebhookURL string
+}
+
+var _ io.Writer = (*discordClient)(nil)
+
+// Webhook is the webhook object sent to discord
+type Webhook struct {
+        Username  string  `json:"username"`
+        AvatarURL string  `json:"avatar_url"`
+        Content   string  `json:"content"`
+        Embeds    []Embed `json:"embeds"`
+}
+
+// Embed is the embed object
+type Embed struct {
+        Author      Author  `json:"author"`
+        Title       string  `json:"title"`
+        URL         string  `json:"url"`
+        Description string  `json:"description"`
+        Color       int64   `json:"color"`
+        Fields      []Field `json:"fields"`
+        Thumbnail   Image   `json:"thumbnail"`
+        Image       Image   `json:"image"`
+        Footer      Footer  `json:"footer"`
+        TimeStamp   string  `json:"timestamp"`
+}
+
+// Author is the author object
+type Author struct {
+        Name    string `json:"name"`
+        URL     string `json:"url"`
+        IconURL string `json:"icon_url"`
+}
+
+// Field is the field object inside an embed
+type Field struct {
+        Name   string `json:"name"`
+        Value  string `json:"value"`
+        Inline bool   `json:"inline,omitempty"`
+}
+
+// Footer is the footer of the embed
+type Footer struct {
+        Text    string `json:"text"`
+        IconURL string `json:"icon_url"`
+}
+
+// Image is an image possibly contained inside the embed
+type Image struct {
+        URL string `json:"url"`
+}
+
+func (c *discordClient) postInfo(webhook *Webhook) error <span class="cov8" title="1">{
+        webhook.Embeds[0].Color = 2201331
+        return c.post(webhook)
+}</span>
+
+func (c *discordClient) postError(webhook *Webhook) error <span class="cov8" title="1">{
+        webhook.Embeds[0].Color = 15092300
+        return c.post(webhook)
+}</span>
+
+func (c *discordClient) postSuccess(webhook *Webhook) error <span class="cov8" title="1">{
+        webhook.Embeds[0].Color = 5747840
+        return c.post(webhook)
+}</span>
+
+func (c *discordClient) post(webhook *Webhook) error <span class="cov8" title="1">{
+        payload, err := json.Marshal(webhook)
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to marshal webhook payload: %s", err)
+        }</span>
+
+        <span class="cov8" title="1">res, err := defaultHTTP.Post(c.WebhookURL, "application/json", bytes.NewReader(payload))
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to post to webhook: %s", err)
+        }</span>
+        <span class="cov8" title="1">defer res.Body.Close()
+
+        body, err := io.ReadAll(res.Body)
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed read body response : %s", err)
+        }</span>
+
+        <span class="cov8" title="1">if res.StatusCode &gt;= 400 </span><span class="cov8" title="1">{
+                return fmt.Errorf("failed to post to webhook: reason=%s status=%s", body, res.Status)
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
+}
+
+func (c *discordClient) Write(p []byte) (n int, err error) <span class="cov8" title="1">{
+        hostname, err := os.Hostname()
+        if err != nil </span><span class="cov0" title="0">{
+                hostname = "(unknown)"
+        }</span>
+
+        <span class="cov8" title="1">w := &amp;Webhook{
+                Username: build.String(),
+                Embeds:   []Embed{{Footer: Footer{Text: hostname}}},
+        }
+
+        w.Embeds[0] = Embed{
+                Description: string(p),
+        }
+
+        return len(p), c.postError(w)</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package main
+
+import (
+        "fmt"
+        "io"
+        "log"
+        "net"
+
+        "github.com/pkg/errors"
+)
+
+// DynDNS holds all the required dependencies
+type DynDNS struct {
+        gandiClient   *gandiClient
+        discordClient *discordClient
+}
+
+type IPAddrs struct {
+        V4 *net.IP `json:"IPAddress"`
+        V6 *net.IP `json:"IPv6Address"`
+}
+
+func (ipAddrs *IPAddrs) String() string <span class="cov8" title="1">{
+        str := "["
+        if ipAddrs.V4 != nil </span><span class="cov8" title="1">{
+                str += ipAddrs.V4.String()
+        }</span>
+        <span class="cov8" title="1">if ipAddrs.V6 != nil </span><span class="cov8" title="1">{
+                str += " " + ipAddrs.V6.String()
+        }</span>
+        <span class="cov8" title="1">str += "]"
+        return str</span>
+}
+
+func (ipAddrs *IPAddrs) values() []*net.IP <span class="cov8" title="1">{
+        values := make([]*net.IP, 0, 2)
+        if ipAddrs.V4 != nil </span><span class="cov8" title="1">{
+                values = append(values, ipAddrs.V4)
+        }</span>
+        <span class="cov8" title="1">if ipAddrs.V6 != nil </span><span class="cov8" title="1">{
+                values = append(values, ipAddrs.V6)
+        }</span>
+        <span class="cov8" title="1">return values</span>
+}
+
+// resolveIPs finds the current IP(s) addresses pointu
+func (d *DynDNS) resolveIPs() (*IPAddrs, error) <span class="cov8" title="1">{
+        res, err := defaultHTTP.Get("https://api64.ipify.org")
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov8" title="1">defer res.Body.Close()
+
+        body, err := io.ReadAll(res.Body)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">ip := net.ParseIP(string(body))
+        if ip == nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("failed to parse ip: %s", body)
+        }</span>
+
+        <span class="cov8" title="1">if ip.To4() != nil </span><span class="cov0" title="0">{
+                // if ipv4 return here because there are not IPv6
+                return &amp;IPAddrs{V4: &amp;ip}, nil
+        }</span>
+
+        <span class="cov8" title="1">res, err = defaultHTTP.Get("https://api.ipify.org")
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov8" title="1">defer res.Body.Close()
+
+        body, err = io.ReadAll(res.Body)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">ip2 := net.ParseIP(string(body))
+        if ip2 == nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("failed to parse ip: %s", body)
+        }</span>
+
+        <span class="cov8" title="1">return &amp;IPAddrs{V6: &amp;ip, V4: &amp;ip2}, nil</span>
+}
+
+// execute check the current IPs, and the one defines in the DNS records.
+// If necessary, it updates the DNS records and notify Discord.
+func (dyndns *DynDNS) execute(domain string, record string, ttl int, alwaysNotify bool) error <span class="cov8" title="1">{
+        resolvedIPs, err := dyndns.resolveIPs()
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov8" title="1">log.Printf("Current dynamic IP(s): %s\n", resolvedIPs)
+
+        dnsRecords, err := dyndns.gandiClient.get(domain, record)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">needUpdate := dyndns.matchIPs(resolvedIPs, dnsRecords)
+
+        if !needUpdate </span><span class="cov8" title="1">{
+                log.Println("IP address(es) match - no further action")
+
+                if alwaysNotify </span><span class="cov8" title="1">{
+                        err := dyndns.discordClient.postInfo(&amp;Webhook{
+                                Embeds: []Embed{
+                                        {
+                                                Title:       fmt.Sprintf("IP address(es) match for record %s.%s - no further action", record, domain),
+                                                Description: "To disable notifications when nothing happens, remove the `--always-notify` flag",
+                                        },
+                                },
+                        })
+                        return errors.Wrap(err, "failed to send message to discord")
+                }</span>
+                <span class="cov8" title="1">return nil</span>
+        }
+
+        <span class="cov8" title="1">err = dyndns.gandiClient.put(domain, record, []*net.IP{resolvedIPs.V4, resolvedIPs.V6}, ttl)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">log.Printf("DNS record for %s.%s updated\n", record, domain)
+
+        err = dyndns.notifyDiscord(domain, record, resolvedIPs.values())
+        return err</span>
+}
+
+func (dyndns *DynDNS) notifyDiscord(domain string, record string, ips []*net.IP) error <span class="cov8" title="1">{
+        fields := make([]Field, 0, len(ips))
+        for _, ip := range ips </span><span class="cov8" title="1">{
+                field := &amp;Field{Inline: true, Value: ip.String()}
+
+                if ip.To4() != nil </span><span class="cov8" title="1">{
+                        field.Name = "v4"
+                }</span> else<span class="cov8" title="1"> {
+                        field.Name = "v6"
+                }</span>
+
+                <span class="cov8" title="1">fields = append(fields, *field)</span>
+        }
+
+        <span class="cov8" title="1">err := dyndns.discordClient.postSuccess(&amp;Webhook{
+                Embeds: []Embed{
+                        {
+                                Title:       fmt.Sprintf("DNS record for %s.%s updated with the new IP adresses", record, domain),
+                                Description: fmt.Sprintf("See [Gandi Live DNS](https://admin.gandi.net/domain/%s/records)", domain),
+                                Fields:      fields,
+                        },
+                },
+        })
+        return errors.Wrap(err, "failed to post success message to Discord")</span>
+}
+
+func (dyndns *DynDNS) matchIPs(resolvedIPs *IPAddrs, dnsRecords []*domainRecord) bool <span class="cov8" title="1">{
+        ipsFromDNS := make([]*net.IP, 0, 2)
+
+        var foundIPV4 bool
+        var foundIPV6 bool
+
+        for _, records := range dnsRecords </span><span class="cov8" title="1">{
+                for _, rrsetValue := range records.RrsetValues </span><span class="cov8" title="1">{
+                        ipsFromDNS = append(ipsFromDNS, rrsetValue)
+
+                        if resolvedIPs.V4 != nil &amp;&amp; rrsetValue.Equal(*resolvedIPs.V4) </span><span class="cov8" title="1">{
+                                foundIPV4 = true
+                        }</span> else<span class="cov8" title="1"> if resolvedIPs.V6 != nil &amp;&amp; rrsetValue.Equal(*resolvedIPs.V6) </span><span class="cov8" title="1">{
+                                foundIPV6 = true
+                        }</span>
+                }
+        }
+
+        <span class="cov8" title="1">log.Printf("IP(s) from DNS:        %s", ipsFromDNS)
+
+        return !foundIPV4 || !foundIPV6</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package main
+
+import (
+        "bytes"
+        "encoding/json"
+        "fmt"
+        "io"
+        "net"
+        "net/http"
+
+        "github.com/pkg/errors"
+)
+
+type gandiClient struct {
+        Token string
+}
+
+// domainRecord represents a DNS Record
+type domainRecord struct {
+        RrsetType   string    `json:"rrset_type,omitempty"`
+        RrsetTTL    int       `json:"rrset_ttl,omitempty"`
+        RrsetName   string    `json:"rrset_name,omitempty"`
+        RrsetHref   string    `json:"rrset_href,omitempty"`
+        RrsetValues []*net.IP `json:"rrset_values,omitempty"`
+}
+
+func (c *gandiClient) get(domain string, record string) ([]*domainRecord, error) <span class="cov8" title="1">{
+        url := fmt.Sprintf("https://api.gandi.net/v5/livedns/domains/%s/records/%s", domain, record)
+
+        req, err := http.NewRequest("GET", url, nil)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">req.Header.Set("Authorization", "ApiKey "+c.Token)
+        req.Header.Set("Content-type", "application/json")
+
+        res, err := defaultHTTP.Do(req)
+
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov8" title="1">defer res.Body.Close()
+
+        body, err := io.ReadAll(res.Body)
+
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">records := make([]*domainRecord, 0)
+        err = json.Unmarshal(body, &amp;records)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, errors.Wrapf(err, "failed to get %s/records/%s  response=%s", domain, record, body)
+        }</span>
+
+        <span class="cov8" title="1">return records, nil</span>
+}
+
+func rrsetType(ip *net.IP) string <span class="cov8" title="1">{
+        if xx := ip.To4(); xx == nil </span><span class="cov8" title="1">{
+                return "AAAA"
+        }</span>
+        <span class="cov8" title="1">return "A"</span>
+}
+
+func (c *gandiClient) put(domain string, name string, ips []*net.IP, ttl int) error <span class="cov8" title="1">{
+        record := struct {
+                Items []*domainRecord `json:"items"`
+        }{Items: make([]*domainRecord, 0, 2)}
+
+        for _, ip := range ips </span><span class="cov8" title="1">{
+                item := &amp;domainRecord{RrsetTTL: ttl, RrsetValues: []*net.IP{ip}, RrsetType: rrsetType(ip)}
+                record.Items = append(record.Items, item)
+        }</span>
+
+        <span class="cov8" title="1">payload, err := json.Marshal(record)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">url := fmt.Sprintf("https://api.gandi.net/v5/livedns/domains/%s/records/%s", domain, name)
+
+        req, err := http.NewRequest(http.MethodPut, url, bytes.NewReader(payload))
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">req.Header.Set("Authorization", "ApiKey "+c.Token)
+        req.Header.Set("Content-type", "application/json")
+
+        res, err := defaultHTTP.Do(req)
+
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov8" title="1">defer res.Body.Close()
+
+        body, err := io.ReadAll(res.Body)
+
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">if res.StatusCode &gt;= 400 </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to perform PUT status=%d response=%s", res.StatusCode, body)
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package main
+
+import (
+        "net/http"
+        "time"
+
+        "go.mlcdf.fr/dyndns/tests/smockertest"
+)
+
+var defaultHTTP = &amp;http.Client{Timeout: 20 * time.Second}
+
+func init() <span class="cov8" title="1">{
+        if isTest == "true" </span><span class="cov8" title="1">{
+                defaultHTTP.Transport = &amp;smockertest.RedirectTransport{}
+        }</span>
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package main
+
+import (
+        "flag"
+        "fmt"
+        "io"
+        "log"
+        "os"
+
+        "go.mlcdf.fr/sally/build"
+)
+
+const usage = `Usage:
+    dyndns --domain [DOMAIN] --record [RECORD]
+
+Options:
+    --ttl                Time to live in seconds. Defaults to 3600
+    --always-notify      Always notify the Discord channel (even when nothing changes)
+    -V, --version        Print version
+
+Examples:
+    export DISCORD_WEBHOOK_URL='https://discord.com/api/webhooks/xxx'
+    export GANDI_TOKEN='foobar'
+    dyndns --domain example.com --record "*.pi"
+
+How to create a Discord webhook: https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks
+How to generate your Gandi token: https://docs.gandi.net/en/domain_names/advanced_users/api.html
+`
+
+type exitCode int
+
+const (
+        exitOK    exitCode = 0
+        exitError exitCode = 1
+)
+
+var (
+        // Injected from linker flags like `go build -ldflags "-X main.version=$VERSION" -X ...`
+        isTest = "false"
+)
+
+func main() <span class="cov0" title="0">{
+        code := int(mainRun())
+        os.Exit(code)
+}</span>
+
+func mainRun() exitCode <span class="cov8" title="1">{
+        log.SetFlags(0)
+        flag.Usage = func() </span><span class="cov8" title="1">{ fmt.Fprint(os.Stderr, usage) }</span>
+
+        <span class="cov8" title="1">if len(os.Args) == 1 </span><span class="cov8" title="1">{
+                flag.Usage()
+                return exitOK
+        }</span>
+
+        <span class="cov8" title="1">var (
+                versionFlag      bool
+                domainFlag       string
+                recordFlag       string
+                ttlFlag          int = 3600
+                alwaysNotifyFlag bool
+        )
+
+        flag.StringVar(&amp;domainFlag, "domain", domainFlag, "")
+        flag.StringVar(&amp;recordFlag, "record", recordFlag, "")
+
+        flag.IntVar(&amp;ttlFlag, "ttl", ttlFlag, "Time to live. Defaults to 3600.")
+
+        flag.BoolVar(&amp;versionFlag, "version", versionFlag, "print the version")
+        flag.BoolVar(&amp;versionFlag, "V", versionFlag, "print the version")
+
+        flag.BoolVar(&amp;alwaysNotifyFlag, "always-notify", alwaysNotifyFlag, "")
+
+        flag.Parse()
+
+        if versionFlag </span><span class="cov8" title="1">{
+                fmt.Fprintln(os.Stdout, "dyndns "+build.String())
+                return exitOK
+        }</span>
+
+        <span class="cov8" title="1">webhook := os.Getenv("DISCORD_WEBHOOK_URL")
+        if webhook == "" </span><span class="cov8" title="1">{
+                log.Println("error: required environment variable DISCORD_WEBHOOK_URL is empty or missing")
+                return exitError
+        }</span>
+
+        <span class="cov8" title="1">discordClient := &amp;discordClient{webhook}
+        logErr := log.New(io.MultiWriter(os.Stderr, discordClient), "", 0)
+
+        if domainFlag == "" </span><span class="cov8" title="1">{
+                logErr.Println("error: required flag --domain is missing")
+                return exitError
+        }</span>
+
+        <span class="cov8" title="1">if recordFlag == "" </span><span class="cov8" title="1">{
+                logErr.Println("error: required flag --record is missing")
+                return exitError
+        }</span>
+
+        <span class="cov8" title="1">token := os.Getenv("GANDI_TOKEN")
+        if token == "" </span><span class="cov8" title="1">{
+                log.Println("error: required environment variable GANDI_TOKEN is empty or missing")
+                return exitError
+        }</span>
+
+        <span class="cov8" title="1">gandiClient := &amp;gandiClient{token}
+
+        dyn := &amp;DynDNS{
+                gandiClient,
+                discordClient,
+        }
+
+        err := dyn.execute(domainFlag, recordFlag, ttlFlag, alwaysNotifyFlag)
+        if err != nil </span><span class="cov0" title="0">{
+                logErr.Printf("error: %v", err)
+                return exitError
+        }</span>
+
+        <span class="cov8" title="1">return exitOK</span>
+}
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package smockertest
+
+import (
+        "fmt"
+        "net/http"
+        "os"
+)
+
+// RedirectTransport implement a Roundtrip that redirects requests to a running smocker instance
+type RedirectTransport struct{}
+
+var _ http.RoundTripper = &amp;RedirectTransport{}
+
+func (s *RedirectTransport) RoundTrip(r *http.Request) (*http.Response, error) <span class="cov8" title="1">{
+        r.URL.Scheme = "http"
+        r.URL.Host = fmt.Sprintf("localhost:%d", port)
+        return http.DefaultTransport.RoundTrip(r)
+}</span>
+
+// PushMock send the mockfile to the smocker server
+func PushMock(filepath string) error <span class="cov0" title="0">{
+        f, err := os.Open(filepath)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov0" title="0">url := fmt.Sprintf("http://localhost:%d/mocks?reset=true", adminPort)
+        res, err := http.Post(url, "content-type: application/x-yaml", f)
+
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov0" title="0">if res.StatusCode != 200 </span><span class="cov0" title="0">{
+                return fmt.Errorf("error %d while performing POST %s", res.StatusCode, url)
+        }</span>
+
+        <span class="cov0" title="0">return err</span>
+}
+</pre>
+		
+		<pre class="file" id="file6" style="display: none">package smockertest
+
+import (
+        "bytes"
+        "errors"
+        "fmt"
+        "log"
+        "os/exec"
+        "strings"
+)
+
+const (
+        image = "thiht/smocker:0.18.2"
+
+        port      = 8080
+        adminPort = 8081
+)
+
+type containerID struct {
+        id string
+}
+
+func MustStart() *containerID <span class="cov0" title="0">{
+        container, err := Start()
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatalln(err)
+        }</span>
+        <span class="cov0" title="0">return container</span>
+}
+
+func Start() (*containerID, error) <span class="cov0" title="0">{
+        cmd := exec.Command(
+                "docker", "run", "-d", "-p", fmt.Sprintf("%d:%d", port, port), "-p", fmt.Sprintf("%d:%d", adminPort, adminPort), "--name", "dyndns-smocker", image,
+        )
+        var stdout, stderr bytes.Buffer
+        cmd.Stdout, cmd.Stderr = &amp;stdout, &amp;stderr
+
+        if err := cmd.Run(); err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("%v%v", stderr.String(), err)
+        }</span>
+
+        <span class="cov0" title="0">id := strings.TrimSpace(stdout.String())
+        if id == "" </span><span class="cov0" title="0">{
+                return nil, errors.New("unexpected empty output from `docker run`")
+        }</span>
+
+        <span class="cov0" title="0">return &amp;containerID{id}, nil</span>
+}
+
+func (c containerID) Nuke() <span class="cov0" title="0">{
+        if err := c.Kill(); err != nil </span><span class="cov0" title="0">{
+                log.Fatalln(err)
+        }</span>
+
+        <span class="cov0" title="0">if err := c.Remove(); err != nil </span><span class="cov0" title="0">{
+                log.Fatalln(err)
+        }</span>
+}
+
+func (c containerID) Kill() error <span class="cov0" title="0">{
+        return exec.Command("docker", "kill", c.id).Run()
+}</span>
+
+func (c containerID) Remove() error <span class="cov0" title="0">{
+        return exec.Command("docker", "rm", c.id).Run()
+}</span>
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
